@@ -5,7 +5,7 @@ window.addEventListener('DOMContentLoaded', function () {
   const el = id => document.getElementById(id);
   const canvas = el('board');
 
-  const app = { game: null, renderer: null, level: null, phaseView: 'dia', player: 'Visitante' };
+  const app = { game: null, renderer: null, level: null, phaseView: 'dia', player: 'Visitante', gridType: 'hex' };
   const progress = { unlocked: 99 };
   let timeLeft = 0, timerId = null, eventFired = false, wantDemo = false, wantRot = 0;
 
@@ -248,12 +248,16 @@ window.addEventListener('DOMContentLoaded', function () {
     el('modal').hidden = false;
   }
 
+  function updateGridToggle() {
+    document.querySelectorAll('#gridtoggle .gr').forEach(b => { b.className = 'gr' + (b.dataset.grid === app.gridType ? ' on' : ''); });
+  }
+
   function loadLevel(n) {
-    app.level = EEP.buildLevel(n);
+    app.level = EEP.buildLevel(n, app.gridType);
     app.game = EEP.Game(app.level);
     app.renderer = EEP.Renderer(canvas, app.game);
     app.phaseView = 'dia';
-    buildLevelBar(); buildObjective(); buildPalette(); buildIndicators();
+    buildLevelBar(); buildObjective(); buildPalette(); buildIndicators(); updateGridToggle();
     onHint(''); app.renderer.draw(null); refresh();
     startTimer(true);
     if (wantDemo) seedDemo();
@@ -261,13 +265,13 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
   function seedDemo() {
-    const Hex = EEP.Hex;
+    const Hex = EEP.Hex, grid = app.level.grid;
     const node = app.level.nodes[0].key, c0 = app.game.cell(node);
-    const nbrs = Hex.neighbors(c0.q, c0.r).map(n => Hex.key(n.q, n.r)).filter(k => { const c = app.game.cell(k); return c && (c.terrain === 'land' || c.terrain === 'hill'); });
+    const nbrs = grid.neighbors(c0.q, c0.r).map(n => Hex.key(n.q, n.r)).filter(k => { const c = app.game.cell(k); return c && (c.terrain === 'land' || c.terrain === 'hill'); });
     const put = (t, k) => { if (!k) return; app.game.setTool(t); app.game.apply(k); };
     put('solar', nbrs[0]); put('wind', nbrs[1]);
     let wa = null;
-    for (const [k, c] of app.level.cells) { if ((c.terrain === 'land' || c.terrain === 'hill') && Hex.neighbors(c.q, c.r).some(n => { const nc = app.game.cell(Hex.key(n.q, n.r)); return nc && nc.terrain === 'water'; })) { wa = k; break; } }
+    for (const [k, c] of app.level.cells) { if ((c.terrain === 'land' || c.terrain === 'hill') && grid.neighbors(c.q, c.r).some(n => { const nc = app.game.cell(Hex.key(n.q, n.r)); return nc && nc.terrain === 'water'; })) { wa = k; break; } }
     put('hydro', wa);
     if (app.level.pieces.indexOf('battery') >= 0) put('battery', nbrs[2]);
     if (app.level.pieces.indexOf('biomass') >= 0) put('biomass', nbrs[3]);
@@ -283,6 +287,9 @@ window.addEventListener('DOMContentLoaded', function () {
   el('modal').addEventListener('click', e => { if (e.target === el('modal')) { el('modal').hidden = true; if (timeLeft > 0) startTimer(false); } });
   el('rot-l').addEventListener('click', () => { if (app.renderer) app.renderer.rotate(-Math.PI / 4); });
   el('rot-r').addEventListener('click', () => { if (app.renderer) app.renderer.rotate(Math.PI / 4); });
+  document.querySelectorAll('#gridtoggle .gr').forEach(btn => {
+    btn.addEventListener('click', () => { if (app.gridType === btn.dataset.grid) return; app.gridType = btn.dataset.grid; loadLevel(app.level.id - 1); });
+  });
   el('openrank').addEventListener('click', openRank);
   el('rank-close').addEventListener('click', () => { el('rankmodal').hidden = true; if (timeLeft > 0) startTimer(false); });
   el('rankmodal').addEventListener('click', e => { if (e.target === el('rankmodal')) { el('rankmodal').hidden = true; if (timeLeft > 0) startTimer(false); } });
@@ -295,6 +302,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(location.search);
     const q = parseInt(params.get('fase'), 10); if (q >= 1 && q <= EEP.LEVEL_COUNT) { start = q - 1; skipLogin = true; }
     wantDemo = params.get('demo') === '1';
+    const gt = params.get('grid'); if (gt === 'square' || gt === 'hex') app.gridType = gt;
     const rr = parseFloat(params.get('rot')); if (!isNaN(rr)) wantRot = rr;
   } catch (e) { }
 

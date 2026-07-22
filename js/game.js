@@ -2,6 +2,7 @@
 window.EEP = window.EEP || {};
 window.EEP.Game = function (level) {
   const Hex = window.EEP.Hex;
+  const grid = level.grid || window.EEP.Grid.hex;
   const PIECES = window.EEP.PIECES;
   const K = window.EEP.CONST;
   const LOSS_BASE = 0.03;
@@ -25,7 +26,7 @@ window.EEP.Game = function (level) {
 
   function adjacentToWater(k) {
     const c = cell(k); if (!c) return false;
-    return Hex.neighbors(c.q, c.r).some(n => { const nc = cell(Hex.key(n.q, n.r)); return nc && nc.terrain === 'water'; });
+    return grid.neighbors(c.q, c.r).some(n => { const nc = cell(Hex.key(n.q, n.r)); return nc && nc.terrain === 'water'; });
   }
 
   function isBuildableLand(c) { return c.terrain === 'land' || c.terrain === 'hill'; }
@@ -75,7 +76,7 @@ window.EEP.Game = function (level) {
       const next = [];
       for (const k of frontier) {
         const c = cell(k);
-        for (const n of Hex.neighbors(c.q, c.r)) {
+        for (const n of grid.neighbors(c.q, c.r)) {
           const nk = Hex.key(n.q, n.r);
           if (!visited.has(nk) && connectable(nk)) { visited.add(nk); dist.set(nk, d + 1); next.push(nk); }
         }
@@ -93,7 +94,7 @@ window.EEP.Game = function (level) {
       for (const k of frontier) {
         if (state.pieces.has(k) && PIECES[state.pieces.get(k).type].kind === 'source') return true;
         const c = cell(k);
-        for (const n of Hex.neighbors(c.q, c.r)) {
+        for (const n of grid.neighbors(c.q, c.r)) {
           const nk = Hex.key(n.q, n.r);
           if (!seen.has(nk) && connectable(nk)) { seen.add(nk); next.push(nk); }
         }

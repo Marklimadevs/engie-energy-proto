@@ -71,8 +71,8 @@ window.EEP = window.EEP || {};
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function hash01(q, r) { const h = Math.sin(q * 12.9898 + r * 78.233) * 43758.5453; return h - Math.floor(h); }
 
-  // Build a map from offset-coord authoring sets.
-  function buildMap(W, H, opts) {
+  // Build a map from offset-coord authoring sets, for the given grid (hex or square).
+  function buildMap(W, H, opts, grid) {
     const water = new Set(opts.water || []);
     const hills = new Set(opts.hills || []);
     const nodeByCO = new Map((opts.nodes || []).map(n => [n.col + ',' + n.row, n]));
@@ -81,7 +81,7 @@ window.EEP = window.EEP || {};
 
     for (let row = 0; row < H; row++) {
       for (let col = 0; col < W; col++) {
-        const q = col - Math.floor(row / 2), r = row;
+        const pc = grid.place(col, row), q = pc.q, r = pc.r;
         const k = Hex.key(q, r);
         const co = col + ',' + row;
         let terrain = 'land';
@@ -104,15 +104,17 @@ window.EEP = window.EEP || {};
   }
 
   // ---- Level definitions ----
-  function level1() {
+  function level1(gridType) {
+    const grid = window.EEP.Grid[gridType] || window.EEP.Grid.hex;
     const W = 10, H = 9;
     const m = buildMap(W, H, {
       water: ['3,2', '4,3', '4,4', '5,5', '5,6', '6,7'],
       nodes: [{ col: 8, row: 6, type: 'cidade', demand: 120 }]
-    });
+    }, grid);
     return {
       id: 1, name: 'Ilumine a Cidade',
       teaches: 'geracao · transmissao · consumo',
+      grid, gridType: grid.type,
       W, H, cells: m.cells, nodes: m.nodes,
       budget: 500, parCost: 220, phases: ['dia'],
       pieces: ['solar', 'hydro', 'wire', 'erase'],
@@ -123,16 +125,18 @@ window.EEP = window.EEP || {};
     };
   }
 
-  function level2() {
+  function level2(gridType) {
+    const grid = window.EEP.Grid[gridType] || window.EEP.Grid.hex;
     const W = 11, H = 9;
     const m = buildMap(W, H, {
       water: ['4,3', '4,4', '5,5', '5,6', '6,7'],
       hills: ['0,0', '1,0', '0,1', '1,1', '2,0'],
       nodes: [{ col: 9, row: 6, type: 'cidade', demand: 150 }]
-    });
+    }, grid);
     return {
       id: 2, name: 'Equilibrio Energetico',
       teaches: 'estabilidade · armazenamento · previsao · dia/noite',
+      grid, gridType: grid.type,
       W, H, cells: m.cells, nodes: m.nodes,
       budget: 700, parCost: 320, phases: ['dia', 'noite'],
       pieces: ['solar', 'wind', 'hydro', 'battery', 'ia', 'wire', 'erase'],
@@ -143,7 +147,8 @@ window.EEP = window.EEP || {};
     };
   }
 
-  function level3() {
+  function level3(gridType) {
+    const grid = window.EEP.Grid[gridType] || window.EEP.Grid.hex;
     const W = 12, H = 10;
     const m = buildMap(W, H, {
       water: ['4,3', '4,4', '5,5', '5,6', '6,7'],
@@ -152,10 +157,11 @@ window.EEP = window.EEP || {};
         { col: 9, row: 3, type: 'cidade', demand: 130 },
         { col: 9, row: 8, type: 'industria', demand: 150 }
       ]
-    });
+    }, grid);
     return {
       id: 3, name: 'Transicao Energetica',
       teaches: 'lucro · sustentabilidade · estabilidade · inovacao · multiplas demandas',
+      grid, gridType: grid.type,
       W, H, cells: m.cells, nodes: m.nodes,
       budget: 1100, parCost: 520, phases: ['dia', 'noite'],
       pieces: ['solar', 'wind', 'hydro', 'biomass', 'battery', 'ia', 'sensor', 'drone', 'pnd', 'wire', 'erase'],
@@ -171,7 +177,7 @@ window.EEP = window.EEP || {};
   window.EEP.PIECES = PIECES;
   window.EEP.CONST = { SOLAR_BASE, WIND_BASE, HYDRO_OUT, BIO_OUT, BATTERY_NIGHT };
   window.EEP.LEVEL_COUNT = BUILDERS.length;
-  window.EEP.buildLevel = function (n) { return BUILDERS[Math.max(0, Math.min(BUILDERS.length - 1, n))](); };
+  window.EEP.buildLevel = function (n, gridType) { return BUILDERS[Math.max(0, Math.min(BUILDERS.length - 1, n))](gridType); };
   // back-compat
   window.EEP.buildLevel1 = level1;
 })();

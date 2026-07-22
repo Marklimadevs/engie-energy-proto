@@ -41,7 +41,9 @@ h3{font-family:var(--f-display);margin:0}
 .timer.low{color:#ffd0c6;background:rgba(229,83,61,.2);border-color:rgba(229,83,61,.5)}
 .minibtn{font-family:var(--f-body);font-weight:600;font-size:.78rem;color:#CFE0EE;background:transparent;border:1px solid rgba(120,170,210,.35);border-radius:100px;padding:5px 14px;cursor:pointer}
 .minibtn:hover{border-color:var(--blue-bright);color:#fff}
-.phasetoggle{display:inline-flex;gap:0;border:1px solid rgba(120,170,210,.35);border-radius:100px;overflow:hidden}
+.phasetoggle,.gridtoggle{display:inline-flex;gap:0;border:1px solid rgba(120,170,210,.35);border-radius:100px;overflow:hidden}
+.gr{background:transparent;border:none;color:#B9CEE0;font-family:var(--f-body);font-weight:600;font-size:.8rem;padding:6px 14px;cursor:pointer}
+.gr.on{background:var(--blue);color:#fff}
 .phasetoggle[hidden]{display:none}
 .phasetoggle .ph{background:transparent;border:none;color:#B9CEE0;font-family:var(--f-body);font-weight:600;font-size:.8rem;padding:6px 16px;cursor:pointer}
 .phasetoggle .ph.on{background:var(--blue);color:#fff}

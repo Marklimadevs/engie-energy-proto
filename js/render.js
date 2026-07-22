@@ -4,6 +4,7 @@ window.EEP.Renderer = function (canvas, game) {
   const THREE = window.THREE;
   const Hex = window.EEP.Hex;
   const level = game.level;
+  const grid = level.grid || window.EEP.Grid.hex;
 
   const HS = 1;          // hex size in world units
   const TH = 0.34;       // tile thickness
@@ -37,9 +38,9 @@ window.EEP.Renderer = function (canvas, game) {
 
   // ---- hex tile geometry (shared) ----
   const shape = new THREE.Shape();
-  const cs = Hex.corners(0, 0, HS * 0.965);
+  const cs = grid.tile(HS);
   shape.moveTo(cs[0][0], cs[0][1]);
-  for (let i = 1; i < 6; i++) shape.lineTo(cs[i][0], cs[i][1]);
+  for (let i = 1; i < cs.length; i++) shape.lineTo(cs[i][0], cs[i][1]);
   shape.closePath();
   const tileGeo = new THREE.ExtrudeGeometry(shape, { depth: TH, bevelEnabled: false });
   tileGeo.rotateX(-Math.PI / 2);
@@ -47,7 +48,7 @@ window.EEP.Renderer = function (canvas, game) {
 
   // hex outline for hover
   const ringPts = [];
-  for (let i = 0; i <= 6; i++) { const c = cs[i % 6]; ringPts.push(new THREE.Vector3(c[0], 0, c[1])); }
+  for (let i = 0; i <= cs.length; i++) { const c = cs[i % cs.length]; ringPts.push(new THREE.Vector3(c[0], 0, c[1])); }
   const ringGeo = new THREE.BufferGeometry().setFromPoints(ringPts);
 
   function terrainColor(cell) {
@@ -69,7 +70,7 @@ window.EEP.Renderer = function (canvas, game) {
   const tileMeshes = [];
   let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
   for (const c of level.cells.values()) {
-    const p = Hex.axialToPixel(c.q, c.r, HS);
+    const p = grid.toPixel(c.q, c.r, HS);
     c._wx = p.x; c._wz = p.y;
     minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
     minZ = Math.min(minZ, p.y); maxZ = Math.max(maxZ, p.y);
@@ -122,7 +123,7 @@ window.EEP.Renderer = function (canvas, game) {
     const wireMat = new THREE.LineBasicMaterial({ color: COL.wire });
     for (const [k, c] of level.cells) {
       if (!game.connectable(k)) continue;
-      for (const n of Hex.neighbors(c.q, c.r)) {
+      for (const n of grid.neighbors(c.q, c.r)) {
         const nk = Hex.key(n.q, n.r);
         if (!game.connectable(nk)) continue;
         const pair = k < nk ? k + '|' + nk : nk + '|' + k;
