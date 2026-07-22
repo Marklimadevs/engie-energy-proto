@@ -114,7 +114,7 @@ window.EEP = window.EEP || {};
       id: 1, name: 'Ilumine a Cidade',
       teaches: 'geracao · transmissao · consumo',
       W, H, cells: m.cells, nodes: m.nodes,
-      budget: 500, phases: ['dia'],
+      budget: 500, parCost: 220, phases: ['dia'],
       pieces: ['solar', 'hydro', 'wire', 'erase'],
       indicators: ['energia', 'custo', 'sust', 'sat'],
       targets: { sust: 40, sat: 40 }
@@ -132,7 +132,7 @@ window.EEP = window.EEP || {};
       id: 2, name: 'Equilibrio Energetico',
       teaches: 'estabilidade · armazenamento · previsao · dia/noite',
       W, H, cells: m.cells, nodes: m.nodes,
-      budget: 700, phases: ['dia', 'noite'],
+      budget: 700, parCost: 320, phases: ['dia', 'noite'],
       pieces: ['solar', 'wind', 'hydro', 'battery', 'ia', 'wire', 'erase'],
       indicators: ['energia', 'custo', 'sust', 'estab', 'inov'],
       targets: { sust: 45, estab: 45 }
@@ -153,7 +153,7 @@ window.EEP = window.EEP || {};
       id: 3, name: 'Transicao Energetica',
       teaches: 'lucro · sustentabilidade · estabilidade · inovacao · multiplas demandas',
       W, H, cells: m.cells, nodes: m.nodes,
-      budget: 1100, phases: ['dia', 'noite'],
+      budget: 1100, parCost: 520, phases: ['dia', 'noite'],
       pieces: ['solar', 'wind', 'hydro', 'biomass', 'battery', 'ia', 'sensor', 'drone', 'pnd', 'wire', 'erase'],
       indicators: ['energia', 'custo', 'sust', 'estab', 'emis', 'lucro', 'inov'],
       targets: { sust: 50, estab: 50, emis: 45, lucro: 45 }

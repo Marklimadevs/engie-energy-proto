@@ -192,10 +192,14 @@ window.EEP.Game = function (level) {
       Math.max(0, level.budget - cost) * 0.25 - worstLoss * 3
     ));
 
+    // stars: 1 = venceu, 2 = custo <= metade do orcamento, 3 = custo <= par (quase-minimo)
+    let stars = 0;
+    if (win) { stars = 1; if (cost <= level.budget / 2) stars++; if (cost <= (level.parCost || level.budget / 2)) stars++; }
+
     return {
       delivered: worst, totalDemand, cost, coverage, loss: worstLoss,
       sust, estab, inov, emis, lucro, sat,
-      poweredNodes, allPowered, meetsEnergy, meetsBudget, meetsTargets, win, score,
+      poweredNodes, allPowered, meetsEnergy, meetsBudget, meetsTargets, win, stars, score,
       phaseRes, counts: g
     };
   }
