@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arquiteto da Energia — Protótipo (ENGIE)</title>
+<meta name="description" content="Protótipo de gameplay: construa a matriz energética e leve energia à cidade buscando equilíbrio entre energia, custo, sustentabilidade e satisfação.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    Arquiteto da Energia
+    <small>protótipo de gameplay · Level 1</small>
+  </div>
+  <div class="objective" id="objective">Ilumine a cidade: leve energia suficiente gastando pouco e mantendo o equilíbrio.</div>
+</header>
+
+<main class="app">
+  <section class="stage">
+    <canvas id="board" aria-label="Tabuleiro hexagonal do jogo"></canvas>
+    <p class="hint" id="hint">Selecione uma peça ao lado e clique numa célula. Ligue as fontes à cidade com linhas.</p>
+  </section>
+
+  <aside class="panel">
+    <div class="block">
+      <h2>Peças</h2>
+      <div class="palette" id="palette" role="group" aria-label="Peças disponíveis">
+        <button class="tool" data-tool="solar" aria-pressed="false">
+          <span class="ti ti-solar" aria-hidden="true"></span>
+          <span class="tl">Solar</span><span class="tc">R$ 70</span>
+        </button>
+        <button class="tool" data-tool="hydro" aria-pressed="false">
+          <span class="ti ti-hydro" aria-hidden="true"></span>
+          <span class="tl">Hidrelétrica</span><span class="tc">R$ 150</span>
+        </button>
+        <button class="tool" data-tool="wire" aria-pressed="false">
+          <span class="ti ti-wire" aria-hidden="true"></span>
+          <span class="tl">Linha</span><span class="tc">R$ 10</span>
+        </button>
+        <button class="tool" data-tool="erase" aria-pressed="false">
+          <span class="ti ti-erase" aria-hidden="true"></span>
+          <span class="tl">Remover</span><span class="tc">—</span>
+        </button>
+      </div>
+      <p class="tradeoff" id="tradeoff">Solar: barata e sustentável, rende mais em célula ensolarada. Hidrelétrica: muita energia, mas cara e menos sustentável.</p>
+    </div>
+
+    <div class="block">
+      <h2>Indicadores</h2>
+      <div class="ind">
+        <div class="ind-row"><span>Energia</span><b id="v-energia">0 / 120</b></div>
+        <div class="bar"><i id="b-energia" style="width:0%"></i></div>
+      </div>
+      <div class="ind">
+        <div class="ind-row"><span>Custo</span><b id="v-custo">R$ 0 / 500</b></div>
+        <div class="bar"><i id="b-custo" class="amber" style="width:0%"></i></div>
+      </div>
+      <div class="ind">
+        <div class="ind-row"><span>Sustentabilidade</span><b id="v-sust">70</b></div>
+        <div class="bar"><i id="b-sust" class="green" style="width:70%"></i></div>
+      </div>
+      <div class="ind">
+        <div class="ind-row"><span>Satisfação</span><b id="v-sat">40</b></div>
+        <div class="bar"><i id="b-sat" class="green" style="width:40%"></i></div>
+      </div>
+    </div>
+
+    <div class="block actions">
+      <button id="finish" class="btn btn-primary">Finalizar fase</button>
+      <button id="reset" class="btn btn-ghost">Reiniciar</button>
+    </div>
+  </aside>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card">
+    <span class="modal-tag" id="modal-tag">Resultado</span>
+    <h3 id="modal-title">Fase concluída</h3>
+    <p id="modal-msg"></p>
+    <div class="score" id="modal-score"></div>
+    <div class="modal-actions">
+      <button id="modal-again" class="btn btn-primary">Jogar de novo</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/hex.js"></script>
+<script src="js/level.js"></script>
+<script src="js/game.js"></script>
+<script src="js/render.js"></script>
+<script src="js/input.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
