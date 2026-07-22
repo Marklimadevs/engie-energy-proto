@@ -25,6 +25,22 @@ h3{font-family:var(--f-display);margin:0}
   radial-gradient(circle at 30% 30%,var(--blue-bright),var(--blue) 60%,var(--blue-deep));display:inline-block}
 .objective{font-size:.9rem;color:#B9CEE0;max-width:52ch}
 
+.levelbar{display:flex;gap:6px;flex-wrap:wrap}
+.levelbar button{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.04em;padding:7px 12px;border-radius:100px;
+  border:1px solid rgba(120,170,210,.35);background:transparent;color:#B9CEE0;cursor:pointer}
+.levelbar button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.levelbar button.locked{opacity:.4;cursor:not-allowed}
+.levelbar button:not(.locked):hover{border-color:var(--blue-bright)}
+
+.objbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:10px clamp(16px,3vw,32px);background:var(--ink-2);color:#CFE0EE;border-bottom:1px solid rgba(120,170,210,.14)}
+.objbar strong{font-family:var(--f-display);font-size:.98rem;color:#fff}
+.objbar span{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;color:#8fb2ce}
+.phasetoggle{margin-left:auto;display:inline-flex;gap:0;border:1px solid rgba(120,170,210,.35);border-radius:100px;overflow:hidden}
+.phasetoggle[hidden]{display:none}
+.phasetoggle .ph{background:transparent;border:none;color:#B9CEE0;font-family:var(--f-body);font-weight:600;font-size:.8rem;padding:6px 16px;cursor:pointer}
+.phasetoggle .ph.on{background:var(--blue);color:#fff}
+
 .app{display:grid;grid-template-columns:1fr 320px;gap:20px;padding:clamp(16px,3vw,28px);align-items:start;max-width:1240px;margin-inline:auto}
 @media(max-width:840px){.app{grid-template-columns:1fr}}
 

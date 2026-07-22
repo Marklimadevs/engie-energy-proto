@@ -1,35 +1,24 @@
-/* Input — palette selection + canvas interaction. window.EEP.attachInput */
+/* Canvas interaction — bound once, reads current app.game / app.renderer. window.EEP.attachCanvas */
 window.EEP = window.EEP || {};
-window.EEP.attachInput = function (opts) {
-  const { game, renderer, canvas, palette, onChange, onHint } = opts;
-  let hoverKey = null;
-
-  function selectTool(btn) {
-    game.setTool(btn.dataset.tool);
-    palette.querySelectorAll('.tool').forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
-  }
-
-  palette.querySelectorAll('.tool').forEach(btn => {
-    btn.addEventListener('click', () => selectTool(btn));
-  });
+window.EEP.attachCanvas = function (app, opts) {
+  const { canvas, onChange, onHint } = opts;
+  let hover = null;
 
   canvas.addEventListener('click', (e) => {
-    const k = renderer.hitTest(e.clientX, e.clientY);
+    if (!app.renderer || !app.game) return;
+    const k = app.renderer.hitTest(e.clientX, e.clientY);
     if (!k) return;
-    game.apply(k);
-    if (onHint) onHint(game.state.message);
-    renderer.draw(hoverKey);
+    app.game.apply(k);
+    if (onHint) onHint(app.game.state.message);
+    app.renderer.draw(hover);
     if (onChange) onChange();
   });
 
   canvas.addEventListener('mousemove', (e) => {
-    const k = renderer.hitTest(e.clientX, e.clientY);
-    if (k !== hoverKey) { hoverKey = k; renderer.draw(hoverKey); }
+    if (!app.renderer) return;
+    const k = app.renderer.hitTest(e.clientX, e.clientY);
+    if (k !== hover) { hover = k; app.renderer.draw(hover); }
   });
 
-  canvas.addEventListener('mouseleave', () => { hoverKey = null; renderer.draw(null); });
-
-  // default selection
-  const first = palette.querySelector('.tool[data-tool="solar"]');
-  if (first) selectTool(first);
+  canvas.addEventListener('mouseleave', () => { hover = null; if (app.renderer) app.renderer.draw(null); });
 };
