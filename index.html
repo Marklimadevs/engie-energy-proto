@@ -22,10 +22,14 @@
 
 <div class="objbar">
   <strong id="obj-name">Fase 1 — Ilumine a Cidade</strong>
-  <span id="obj-teaches">geracao · transmissao · consumo</span>
-  <span class="phasetoggle" id="phasetoggle" hidden>
-    <button data-phase="dia" class="ph on">Dia</button>
-    <button data-phase="noite" class="ph">Noite</button>
+  <span id="obj-objective">Abasteça a cidade.</span>
+  <span class="obj-right">
+    <span class="timer" id="timer">2:00</span>
+    <button id="openrank" class="minibtn">Ranking</button>
+    <span class="phasetoggle" id="phasetoggle" hidden>
+      <button data-phase="dia" class="ph on">Dia</button>
+      <button data-phase="noite" class="ph">Noite</button>
+    </span>
   </span>
 </div>
 
@@ -61,10 +65,33 @@
     <div class="stars" id="modal-stars" aria-label="Estrelas conquistadas"></div>
     <p id="modal-msg"></p>
     <div class="score" id="modal-score"></div>
+    <div class="medals" id="modal-medals"></div>
     <div class="modal-actions">
       <button id="modal-next" class="btn btn-primary" hidden>Próxima fase</button>
       <button id="modal-again" class="btn btn-ghost">Continuar</button>
     </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<div class="modal" id="login">
+  <div class="modal-card">
+    <span class="modal-tag">Bem-vindo</span>
+    <h3>Arquiteto da Energia</h3>
+    <p>Construa a matriz energética do futuro. Identifique-se para pontuar no ranking.</p>
+    <input id="login-name" class="input" type="text" maxlength="18" placeholder="Seu nome ou crachá" autocomplete="off">
+    <div class="modal-actions"><button id="login-go" class="btn btn-primary">Entrar</button></div>
+  </div>
+</div>
+
+<div class="modal" id="rankmodal" hidden>
+  <div class="modal-card">
+    <span class="modal-tag">Ranking</span>
+    <h3>Melhores pontuações</h3>
+    <div class="ranklist" id="ranklist"></div>
+    <div class="medals" id="rankmedals"></div>
+    <div class="modal-actions"><button id="rank-close" class="btn btn-ghost">Fechar</button></div>
   </div>
 </div>
 

@@ -164,7 +164,20 @@ window.EEP.Renderer = function (canvas, game) {
 
     if (hoverKey && level.cells.has(hoverKey)) {
       const c = level.cells.get(hoverKey);
-      hexPath(c.cx, c.cy, SIZE - 1.5); ctx.lineWidth = 2.5; ctx.strokeStyle = COLORS.hover; ctx.stroke();
+      const tool = game.state.tool;
+      const ok = game.canPlace ? game.canPlace(hoverKey) : true;
+      // ghost preview of the selected piece following the cursor
+      if (tool && tool !== 'erase' && ok) {
+        ctx.save(); ctx.globalAlpha = 0.5;
+        if (tool === 'wire') { ctx.fillStyle = '#3a4e62'; ctx.beginPath(); ctx.arc(c.cx, c.cy, 4, 0, 7); ctx.fill(); }
+        else drawPiece(tool, c.cx, c.cy);
+        ctx.restore();
+      }
+      // yellow hover outline (red if the current tool can't go there)
+      hexPath(c.cx, c.cy, SIZE - 1.5);
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = (tool && !ok) ? '#E5533D' : '#FFC400';
+      ctx.stroke();
     }
   }
 

@@ -117,7 +117,9 @@ window.EEP = window.EEP || {};
       budget: 500, parCost: 220, phases: ['dia'],
       pieces: ['solar', 'hydro', 'wire', 'erase'],
       indicators: ['energia', 'custo', 'sust', 'sat'],
-      targets: { sust: 40, sat: 40 }
+      targets: { sust: 40, sat: 40 },
+      objective: 'Abasteca a cidade pequena — 120 MW.',
+      time: 120, event: null
     };
   }
 
@@ -135,7 +137,9 @@ window.EEP = window.EEP || {};
       budget: 700, parCost: 320, phases: ['dia', 'noite'],
       pieces: ['solar', 'wind', 'hydro', 'battery', 'ia', 'wire', 'erase'],
       indicators: ['energia', 'custo', 'sust', 'estab', 'inov'],
-      targets: { sust: 45, estab: 45 }
+      targets: { sust: 45, estab: 45 },
+      objective: 'Acenda a cidade de dia e de noite — 150 MW.',
+      time: 150, event: { at: 60, type: 'drought', label: 'Seca: hidreletricas a -40%' }
     };
   }
 
@@ -156,7 +160,9 @@ window.EEP = window.EEP || {};
       budget: 1100, parCost: 520, phases: ['dia', 'noite'],
       pieces: ['solar', 'wind', 'hydro', 'biomass', 'battery', 'ia', 'sensor', 'drone', 'pnd', 'wire', 'erase'],
       indicators: ['energia', 'custo', 'sust', 'estab', 'emis', 'lucro', 'inov'],
-      targets: { sust: 50, estab: 50, emis: 45, lucro: 45 }
+      targets: { sust: 50, estab: 50, emis: 45, lucro: 45 },
+      objective: 'Abasteca cidade e industria — 280 MW.',
+      time: 180, event: { at: 80, type: 'spike', label: 'Pico de consumo: demanda +20%' }
     };
   }
 

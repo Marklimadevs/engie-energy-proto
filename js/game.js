@@ -11,7 +11,8 @@ window.EEP.Game = function (level) {
     pieces: new Map(), // key -> { type }
     wires: new Set(),
     tool: null,
-    message: ''
+    message: '',
+    mods: { drought: 1, demand: 1 } // dynamic events
   };
 
   const nodeKeys = new Set(level.nodes.map(n => n.key));
@@ -133,7 +134,8 @@ window.EEP.Game = function (level) {
     const lossPerHop = LOSS_BASE * (g.ia > 0 ? 0.55 : 1);
     let delivered = 0, loss = 0;
     for (const s of g.sources) {
-      const out = s.def.output(s.cell, { phase });
+      let out = s.def.output(s.cell, { phase });
+      if (s.def.key === 'hydro') out *= state.mods.drought; // seca reduz hidreletrica
       const hops = g.dist.get(s.k) || 0;
       const eff = Math.max(0, 1 - lossPerHop * hops);
       delivered += out * eff; loss += out * (1 - eff);
@@ -162,7 +164,8 @@ window.EEP.Game = function (level) {
     if (!isFinite(worst)) worst = 0;
 
     const cost = pieceCost();
-    const coverage = totalDemand > 0 ? worst / totalDemand : 0;
+    const effDemand = totalDemand * state.mods.demand; // pico de consumo
+    const coverage = effDemand > 0 ? worst / effDemand : 0;
     const poweredNodes = level.nodes.filter(n => nodePowered(n.key)).length;
     const allPowered = poweredNodes === level.nodes.length;
 
@@ -181,7 +184,7 @@ window.EEP.Game = function (level) {
     const ind = { energia: coverage * 100, custo: cost, sust, estab, inov, emis, lucro, sat };
 
     // win: cover demand (worst phase), all nodes powered, budget ok, targets met
-    const meetsEnergy = worst >= totalDemand && allPowered;
+    const meetsEnergy = worst >= effDemand && allPowered;
     const meetsBudget = cost <= level.budget;
     let meetsTargets = true;
     for (const key in (level.targets || {})) if (ind[key] < level.targets[key]) meetsTargets = false;
@@ -197,18 +200,31 @@ window.EEP.Game = function (level) {
     if (win) { stars = 1; if (cost <= level.budget / 2) stars++; if (cost <= (level.parCost || level.budget / 2)) stars++; }
 
     return {
-      delivered: worst, totalDemand, cost, coverage, loss: worstLoss,
+      delivered: worst, totalDemand: effDemand, cost, coverage, loss: worstLoss,
       sust, estab, inov, emis, lucro, sat,
       poweredNodes, allPowered, meetsEnergy, meetsBudget, meetsTargets, win, stars, score,
       phaseRes, counts: g
     };
   }
 
-  function reset() { state.pieces.clear(); state.wires.clear(); state.message = ''; }
+  function reset() { state.pieces.clear(); state.wires.clear(); state.message = ''; state.mods = { drought: 1, demand: 1 }; }
+
+  // Non-mutating: can the current tool be applied at k? (for hover ghost / feedback)
+  function canPlace(k) {
+    const c = cell(k); if (!c) return false;
+    const t = state.tool; if (!t) return false;
+    if (t === 'erase') return state.pieces.has(k) || state.wires.has(k);
+    if (isNode(k)) return false;
+    const def = PIECES[t]; if (!def) return false;
+    if (t === 'wire') return isBuildableLand(c) && !state.pieces.has(k);
+    if (state.pieces.has(k)) return false;
+    if (def.place === 'water_adj') return c.terrain === 'water' || adjacentToWater(k);
+    return isBuildableLand(c);
+  }
 
   return {
     state, level, totalDemand, nodeKeys,
     setTool(t) { state.tool = t; },
-    apply, simulate, reset, connectable, isNode, cell
+    apply, simulate, reset, canPlace, connectable, isNode, cell
   };
 };
