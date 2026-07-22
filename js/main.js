@@ -7,7 +7,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   const app = { game: null, renderer: null, level: null, phaseView: 'dia', player: 'Visitante' };
   const progress = { unlocked: 99 };
-  let timeLeft = 0, timerId = null, eventFired = false, wantDemo = false;
+  let timeLeft = 0, timerId = null, eventFired = false, wantDemo = false, wantRot = 0;
 
   const IND_LABEL = {
     energia: 'Energia', custo: 'Custo', sust: 'Sustentabilidade',
@@ -257,6 +257,7 @@ window.addEventListener('DOMContentLoaded', function () {
     onHint(''); app.renderer.draw(null); refresh();
     startTimer(true);
     if (wantDemo) seedDemo();
+    if (wantRot) app.renderer.rotate(wantRot * Math.PI / 180);
   }
 
   function seedDemo() {
@@ -280,6 +281,8 @@ window.addEventListener('DOMContentLoaded', function () {
   el('modal-again').addEventListener('click', () => { el('modal').hidden = true; if (timeLeft > 0) startTimer(false); });
   el('modal-next').addEventListener('click', () => { el('modal').hidden = true; loadLevel(app.level.id); });
   el('modal').addEventListener('click', e => { if (e.target === el('modal')) { el('modal').hidden = true; if (timeLeft > 0) startTimer(false); } });
+  el('rot-l').addEventListener('click', () => { if (app.renderer) app.renderer.rotate(-Math.PI / 4); });
+  el('rot-r').addEventListener('click', () => { if (app.renderer) app.renderer.rotate(Math.PI / 4); });
   el('openrank').addEventListener('click', openRank);
   el('rank-close').addEventListener('click', () => { el('rankmodal').hidden = true; if (timeLeft > 0) startTimer(false); });
   el('rankmodal').addEventListener('click', e => { if (e.target === el('rankmodal')) { el('rankmodal').hidden = true; if (timeLeft > 0) startTimer(false); } });
@@ -292,6 +295,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(location.search);
     const q = parseInt(params.get('fase'), 10); if (q >= 1 && q <= EEP.LEVEL_COUNT) { start = q - 1; skipLogin = true; }
     wantDemo = params.get('demo') === '1';
+    const rr = parseFloat(params.get('rot')); if (!isNaN(rr)) wantRot = rr;
   } catch (e) { }
 
   function doLogin() {

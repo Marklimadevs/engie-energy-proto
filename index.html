@@ -36,7 +36,11 @@
 <main class="app">
   <section class="stage">
     <canvas id="board" aria-label="Tabuleiro hexagonal do jogo"></canvas>
-    <p class="hint" id="hint">Selecione uma peça ao lado e clique numa célula. Ligue as fontes às demandas com linhas.</p>
+    <div class="rotctrls" aria-label="Girar a visão">
+      <button id="rot-l" title="Girar para a esquerda (Q)" aria-label="Girar para a esquerda">↺</button>
+      <button id="rot-r" title="Girar para a direita (E)" aria-label="Girar para a direita">↻</button>
+    </div>
+    <p class="hint" id="hint">Arraste para girar a visão. Selecione uma peça e clique numa célula para construir; ligue as fontes às demandas com linhas.</p>
   </section>
 
   <aside class="panel">

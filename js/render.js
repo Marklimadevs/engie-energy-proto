@@ -22,9 +22,14 @@ window.EEP.Renderer = function (canvas, game) {
   }
 
   const scene = new THREE.Scene();
-  const camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 1000);
-  camera.position.set(40, 40, 40);
-  camera.lookAt(0, 0, 0);
+  const camera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 2000);
+  const EL = Math.atan(1 / Math.SQRT2); // ~35.26deg -> isometrico verdadeiro
+  let az = Math.PI / 4, camR = 60;
+  function applyCamera() {
+    const ce = Math.cos(EL), se = Math.sin(EL);
+    camera.position.set(Math.cos(az) * ce * camR, se * camR, Math.sin(az) * ce * camR);
+    camera.lookAt(0, 0, 0);
+  }
 
   scene.add(new THREE.HemisphereLight(0xffffff, 0x7a8a9a, 0.68));
   const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(7, 13, 5); scene.add(dir);
@@ -71,6 +76,7 @@ window.EEP.Renderer = function (canvas, game) {
   }
   const ccx = (minX + maxX) / 2, ccz = (minZ + maxZ) / 2;
   const bw = maxX - minX, bd = maxZ - minZ;
+  camR = Math.max(bw, bd) * 1.8 + 8;
   for (const [k, c] of level.cells) {
     c._x = c._wx - ccx; c._z = c._wz - ccz; c._y = topY(c);
     const mat = new THREE.MeshLambertMaterial({ color: terrainColor(c) });
@@ -234,9 +240,11 @@ window.EEP.Renderer = function (canvas, game) {
     gl.setSize(w, h, false);
     canvas.style.height = h + 'px';
     updateCamera(w, h);
+    applyCamera();
     render();
   }
   function render() { syncDynamic(); gl.render(scene, camera); }
+  function rotate(dAz) { az += dAz; applyCamera(); render(); }
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
@@ -256,5 +264,5 @@ window.EEP.Renderer = function (canvas, game) {
   if (!canvas.__resizeBound) { window.addEventListener('resize', () => { if (canvas.__eep) canvas.__eep.onResize(); }); canvas.__resizeBound = true; }
 
   resize();
-  return { draw, hitTest, resize };
+  return { draw, hitTest, resize, rotate };
 };
