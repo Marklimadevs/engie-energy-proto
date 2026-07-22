@@ -15,20 +15,31 @@ python -m http.server 8000
 
 Ou publique via GitHub Pages e jogue pela URL.
 
-## Como jogar (Level 1 — Ilumine a Cidade)
+## Fases (seguindo o GDD "Arquiteto da Energia")
 
-Objetivo: levar energia à cidade **sem estourar o orçamento** e mantendo o equilíbrio.
+- **Fase 1 — Ilumine a Cidade**: Solar, Hidrelétrica, Linha. Geração, transmissão, consumo.
+- **Fase 2 — Equilíbrio Energético**: + Eólica, Baterias, IA. Mecânica **dia/noite** (solar zera à
+  noite, precisa de eólica/bateria); indicadores Estabilidade e Inovação.
+- **Fase 3 — Transição Energética**: + Biomassa, Sensores, Drone, carta de **P&D**. **Duas demandas**
+  (cidade + indústria); indicadores Emissões e Lucro.
 
-1. Escolha uma peça na paleta (Solar, Hidrelétrica, Linha, Remover).
-2. Clique numa célula do tabuleiro para colocar.
-   - Solar rende mais em célula ensolarada (mais clara); vai em terra.
-   - Hidrelétrica só na água (ou ao lado dela); muita energia, mas cara e menos sustentável.
-   - Linha conecta as fontes até a cidade; cada segmento custa e gera perda por distância.
-3. Ligue as fontes à cidade traçando linhas.
-4. "Finalizar fase" mostra o resultado e a pontuação.
+No protótipo todas as fases ficam liberadas (clique na barra de fases). Também dá para abrir direto
+uma fase pela URL: `?fase=2` ou `?fase=3`.
 
-Vence quem entrega a energia exigida, dentro do orçamento, com sustentabilidade e satisfação
-acima do mínimo. A pontuação premia equilíbrio: pouca perda, custo baixo e mix sustentável.
+## Como jogar
+
+1. Escolha uma peça na paleta e clique numa célula para colocar.
+   - Solar rende mais em célula ensolarada; não gera à noite.
+   - Eólica rende com o vento (colinas), gera dia e noite.
+   - Hidrelétrica só na água (ou ao lado); firme, mas cara e menos sustentável.
+   - Baterias entregam à noite; IA reduz perdas; Sensores/Drone estabilizam; P&D dá inovação.
+   - Linha conecta as fontes às demandas; cada segmento custa e gera perda por distância.
+2. Ligue as fontes às demandas traçando linhas. Nas fases 2 e 3, use o toggle **Dia/Noite** — a fase
+   mais fraca é a que vale para vencer.
+3. "Finalizar fase" mostra o resultado, os indicadores e a pontuação.
+
+Vence quem atende a demanda dentro do orçamento **e** mantém os indicadores-alvo acima do mínimo.
+A pontuação premia equilíbrio: pouca perda, custo baixo, mix sustentável e limpo.
 
 ## Estrutura
 
