@@ -27,7 +27,8 @@ window.EEP.attachCanvas = function (app, opts) {
 
   window.addEventListener('mouseup', (e) => {
     if (!down) return; down = false;
-    if (dragged || !app.renderer) return; // was a rotation, not a placement
+    if (!app.renderer) return;
+    if (dragged) { if (app.renderer.snap) app.renderer.snap(); return; } // settle to a 90deg view
     const k = app.renderer.hitTest(e.clientX, e.clientY);
     if (!k) return;
     app.game.apply(k);
@@ -41,7 +42,7 @@ window.EEP.attachCanvas = function (app, opts) {
   // keyboard rotation
   window.addEventListener('keydown', (e) => {
     if (!app.renderer || !app.renderer.rotate) return;
-    if (e.key === 'q' || e.key === 'Q') app.renderer.rotate(-Math.PI / 4);
-    else if (e.key === 'e' || e.key === 'E') app.renderer.rotate(Math.PI / 4);
+    if (e.key === 'q' || e.key === 'Q') app.renderer.rotate(-Math.PI / 2);
+    else if (e.key === 'e' || e.key === 'E') app.renderer.rotate(Math.PI / 2);
   });
 };

@@ -246,6 +246,7 @@ window.EEP.Renderer = function (canvas, game) {
   }
   function render() { syncDynamic(); gl.render(scene, camera); }
   function rotate(dAz) { az += dAz; applyCamera(); render(); }
+  function snap() { const s = Math.PI / 2, off = Math.PI / 4; az = Math.round((az - off) / s) * s + off; applyCamera(); render(); }
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
@@ -265,5 +266,5 @@ window.EEP.Renderer = function (canvas, game) {
   if (!canvas.__resizeBound) { window.addEventListener('resize', () => { if (canvas.__eep) canvas.__eep.onResize(); }); canvas.__resizeBound = true; }
 
   resize();
-  return { draw, hitTest, resize, rotate };
+  return { draw, hitTest, resize, rotate, snap };
 };

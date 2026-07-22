@@ -285,8 +285,8 @@ window.addEventListener('DOMContentLoaded', function () {
   el('modal-again').addEventListener('click', () => { el('modal').hidden = true; if (timeLeft > 0) startTimer(false); });
   el('modal-next').addEventListener('click', () => { el('modal').hidden = true; loadLevel(app.level.id); });
   el('modal').addEventListener('click', e => { if (e.target === el('modal')) { el('modal').hidden = true; if (timeLeft > 0) startTimer(false); } });
-  el('rot-l').addEventListener('click', () => { if (app.renderer) app.renderer.rotate(-Math.PI / 4); });
-  el('rot-r').addEventListener('click', () => { if (app.renderer) app.renderer.rotate(Math.PI / 4); });
+  el('rot-l').addEventListener('click', () => { if (app.renderer) app.renderer.rotate(-Math.PI / 2); });
+  el('rot-r').addEventListener('click', () => { if (app.renderer) app.renderer.rotate(Math.PI / 2); });
   document.querySelectorAll('#gridtoggle .gr').forEach(btn => {
     btn.addEventListener('click', () => { if (app.gridType === btn.dataset.grid) return; app.gridType = btn.dataset.grid; loadLevel(app.level.id - 1); });
   });
