@@ -7,7 +7,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   const app = { game: null, renderer: null, level: null, phaseView: 'dia', player: 'Visitante' };
   const progress = { unlocked: 99 };
-  let timeLeft = 0, timerId = null, eventFired = false;
+  let timeLeft = 0, timerId = null, eventFired = false, wantDemo = false;
 
   const IND_LABEL = {
     energia: 'Energia', custo: 'Custo', sust: 'Sustentabilidade',
@@ -256,6 +256,22 @@ window.addEventListener('DOMContentLoaded', function () {
     buildLevelBar(); buildObjective(); buildPalette(); buildIndicators();
     onHint(''); app.renderer.draw(null); refresh();
     startTimer(true);
+    if (wantDemo) seedDemo();
+  }
+
+  function seedDemo() {
+    const Hex = EEP.Hex;
+    const node = app.level.nodes[0].key, c0 = app.game.cell(node);
+    const nbrs = Hex.neighbors(c0.q, c0.r).map(n => Hex.key(n.q, n.r)).filter(k => { const c = app.game.cell(k); return c && (c.terrain === 'land' || c.terrain === 'hill'); });
+    const put = (t, k) => { if (!k) return; app.game.setTool(t); app.game.apply(k); };
+    put('solar', nbrs[0]); put('wind', nbrs[1]);
+    let wa = null;
+    for (const [k, c] of app.level.cells) { if ((c.terrain === 'land' || c.terrain === 'hill') && Hex.neighbors(c.q, c.r).some(n => { const nc = app.game.cell(Hex.key(n.q, n.r)); return nc && nc.terrain === 'water'; })) { wa = k; break; } }
+    put('hydro', wa);
+    if (app.level.pieces.indexOf('battery') >= 0) put('battery', nbrs[2]);
+    if (app.level.pieces.indexOf('biomass') >= 0) put('biomass', nbrs[3]);
+    const b = document.querySelector('.tool[data-tool="solar"]'); if (b) b.click();
+    refresh(); app.renderer.draw(null);
   }
 
   // ---- controls ----
@@ -272,7 +288,11 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // ---- login then start ----
   let start = 0, skipLogin = false;
-  try { const q = parseInt(new URLSearchParams(location.search).get('fase'), 10); if (q >= 1 && q <= EEP.LEVEL_COUNT) { start = q - 1; skipLogin = true; } } catch (e) { }
+  try {
+    const params = new URLSearchParams(location.search);
+    const q = parseInt(params.get('fase'), 10); if (q >= 1 && q <= EEP.LEVEL_COUNT) { start = q - 1; skipLogin = true; }
+    wantDemo = params.get('demo') === '1';
+  } catch (e) { }
 
   function doLogin() {
     const name = (el('login-name').value || '').trim() || 'Visitante';
