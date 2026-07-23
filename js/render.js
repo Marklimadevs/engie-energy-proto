@@ -19,6 +19,7 @@ window.EEP.Renderer = function (canvas, game) {
   if (!gl) {
     gl = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
     gl.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    gl.shadowMap.enabled = true; gl.shadowMap.type = THREE.PCFSoftShadowMap;
     canvas.__gl = gl;
   }
 
@@ -32,9 +33,11 @@ window.EEP.Renderer = function (canvas, game) {
     camera.lookAt(0, 0, 0);
   }
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x7a8a9a, 0.68));
-  const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(7, 13, 5); scene.add(dir);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x88a0b4, 0.55));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.95);
+  dir.castShadow = true; dir.shadow.mapSize.set(2048, 2048); dir.shadow.bias = -0.0006; dir.shadow.normalBias = 0.02;
+  scene.add(dir); scene.add(dir.target);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.28));
 
   // ---- hex tile geometry (shared) ----
   const shape = new THREE.Shape();
@@ -78,13 +81,18 @@ window.EEP.Renderer = function (canvas, game) {
   const ccx = (minX + maxX) / 2, ccz = (minZ + maxZ) / 2;
   const bw = maxX - minX, bd = maxZ - minZ;
   camR = Math.max(bw, bd) * 1.8 + 8;
+  (function () {
+    const S = Math.max(bw, bd) * 0.72 + 5;
+    dir.position.set(S * 0.7, S * 1.7, S * 0.5); dir.target.position.set(0, 0, 0);
+    const sc = dir.shadow.camera; sc.left = -S; sc.right = S; sc.top = S; sc.bottom = -S; sc.near = 1; sc.far = S * 5.5; sc.updateProjectionMatrix();
+  })();
   for (const [k, c] of level.cells) {
     c._x = c._wx - ccx; c._z = c._wz - ccz; c._y = topY(c);
     const mat = new THREE.MeshLambertMaterial({ color: terrainColor(c) });
     if (c.terrain === 'water') { mat.transparent = true; mat.opacity = 0.92; }
     const m = new THREE.Mesh(tileGeo, mat);
     m.position.set(c._x, c._y, c._z);
-    m.userData.key = k;
+    m.userData.key = k; m.receiveShadow = true; m.castShadow = false;
     boardGroup.add(m); tileMeshes.push(m);
   }
 
@@ -103,14 +111,14 @@ window.EEP.Renderer = function (canvas, game) {
   // ---- surrounding water + floating island base ----
   (function () {
     const W2 = bw + 4, D2 = bd + 4;
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 34, D2 + 34), new THREE.MeshLambertMaterial({ color: 0x6cbfe8 }));
-    water.rotation.x = -Math.PI / 2; water.position.y = -0.6; scene.add(water);
-    const shallow = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 6, D2 + 6), new THREE.MeshLambertMaterial({ color: 0xa2daf3 }));
-    shallow.rotation.x = -Math.PI / 2; shallow.position.y = -0.55; scene.add(shallow);
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 44, D2 + 44), new THREE.MeshBasicMaterial({ color: 0x8ccfee }));
+    water.rotation.x = -Math.PI / 2; water.position.y = -0.58; scene.add(water);
+    const shore = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 2.6, D2 + 2.6), new THREE.MeshBasicMaterial({ color: 0xb2e2f6 }));
+    shore.rotation.x = -Math.PI / 2; shore.position.y = -0.5; scene.add(shore);
     const base = new THREE.Mesh(new THREE.BoxGeometry(W2, 2.0, D2), new THREE.MeshLambertMaterial({ color: 0x6b4a2f }));
-    base.position.y = -1.2; scene.add(base);
+    base.position.y = -1.2; base.receiveShadow = true; scene.add(base);
     const skirt = new THREE.Mesh(new THREE.BoxGeometry(W2 + 0.2, 0.4, D2 + 0.2), new THREE.MeshLambertMaterial({ color: 0x86B24E }));
-    skirt.position.y = -0.3; scene.add(skirt);
+    skirt.position.y = -0.3; skirt.receiveShadow = true; scene.add(skirt);
   })();
   buildDecor();
 
@@ -188,10 +196,11 @@ window.EEP.Renderer = function (canvas, game) {
 
   // ---- low-poly piece builders ----
   function mat(color, ghostly) { const m = new THREE.MeshLambertMaterial({ color: color }); if (ghostly) { m.transparent = true; m.opacity = 0.5; } return m; }
-  function box(w, h, d, color, gh) { return new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color, gh)); }
-  function cyl(rt, rb, h, color, gh, seg) { return new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg || 12), mat(color, gh)); }
-  function cone(r, h, color, gh, seg) { return new THREE.Mesh(new THREE.ConeGeometry(r, h, seg || 8), mat(color, gh)); }
-  function sph(r, color, gh) { return new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), mat(color, gh)); }
+  function M(geo, color, gh) { const m = new THREE.Mesh(geo, mat(color, gh)); if (!gh) { m.castShadow = true; m.receiveShadow = true; } return m; }
+  function box(w, h, d, color, gh) { return M(new THREE.BoxGeometry(w, h, d), color, gh); }
+  function cyl(rt, rb, h, color, gh, seg) { return M(new THREE.CylinderGeometry(rt, rb, h, seg || 12), color, gh); }
+  function cone(r, h, color, gh, seg) { return M(new THREE.ConeGeometry(r, h, seg || 8), color, gh); }
+  function sph(r, color, gh) { return M(new THREE.SphereGeometry(r, 10, 8), color, gh); }
 
   function buildPiece(type, gh) {
     const g = new THREE.Group();

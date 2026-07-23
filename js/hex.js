@@ -52,7 +52,7 @@ window.EEP.Grid = (function () {
     dirs: [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]],
     neighbors(q, r) { return this.dirs.map(d => ({ q: q + d[0], r: r + d[1] })); },
     toPixel(q, r, s) { return { x: s * S3 * (q + r / 2), y: s * 1.5 * r }; },
-    tile(s) { const g = s * 0.965, p = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * (60 * i - 30); p.push([g * Math.cos(a), g * Math.sin(a)]); } return p; },
+    tile(s) { const g = s * 0.999, p = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * (60 * i - 30); p.push([g * Math.cos(a), g * Math.sin(a)]); } return p; },
     place(col, row) { return { q: col - Math.floor(row / 2), r: row }; }
   };
   const square = {
@@ -60,7 +60,7 @@ window.EEP.Grid = (function () {
     dirs: [[1, 0], [-1, 0], [0, 1], [0, -1]],
     neighbors(q, r) { return this.dirs.map(d => ({ q: q + d[0], r: r + d[1] })); },
     toPixel(q, r, s) { return { x: q * s * 1.8, y: r * s * 1.8 }; },
-    tile(s) { const h = s * 0.85; return [[-h, -h], [h, -h], [h, h], [-h, h]]; },
+    tile(s) { const h = s * 0.9; return [[-h, -h], [h, -h], [h, h], [-h, h]]; },
     place(col, row) { return { q: col, r: row }; }
   };
   return { hex, square };
