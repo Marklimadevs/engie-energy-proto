@@ -9,6 +9,7 @@ window.EEP.Renderer = function (canvas, game) {
 
   const HS = 1;          // hex size in world units
   const TH = 0.34;       // tile thickness
+  const SEA_Y = -1.15;   // nivel do mar (oceano ao redor da ilha flutuante)
   const COL = {
     land: 0xDCE7C8, hill: 0x8FA653, water: 0x4F9BE0, node: 0xF3E2BE,
     piece: { solar: 0x123049, wind: 0xEDEDED, hydro: 0x0F7FD4, biomass: 0x3f9b57, battery: 0x16a98c, ia: 0x0F7FD4, sensor: 0x8b9aa8, drone: 0x5D7185, pnd: 0xF4A81D },
@@ -34,11 +35,11 @@ window.EEP.Renderer = function (canvas, game) {
     camera.lookAt(0, 0, 0);
   }
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x88a0b4, 0.55));
-  const dir = new THREE.DirectionalLight(0xffffff, 0.95);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x93b0c4, 0.62));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.82);
   dir.castShadow = true; dir.shadow.mapSize.set(2048, 2048); dir.shadow.bias = -0.0006; dir.shadow.normalBias = 0.02;
   scene.add(dir); scene.add(dir.target);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.28));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.34));
 
   // ---- hex tile geometry (shared) ----
   const shape = new THREE.Shape();
@@ -59,28 +60,34 @@ window.EEP.Renderer = function (canvas, game) {
     if (cell.terrain === 'water') return COL.water;
     if (cell.terrain === 'hill') return 0x6f9a3f;
     if (cell.terrain === 'dirt') return 0xBE9060;
-    if (cell.terrain === 'field') return 0xE2CE64;
-    if (cell.terrain === 'sand') return 0xE9DCA6;
+    if (cell.terrain === 'field') return 0xCBC172;
+    if (cell.terrain === 'sand') return 0xE6D291;
     if (cell.terrain === 'node') return COL.node;
     const a = new THREE.Color(0x74AC48), b = new THREE.Color(0xA6C766);
     return a.lerp(b, cell.irr * 0.5).getHex();
   }
   function topY(cell) {
     if (cell.terrain === 'hill') return 0.32;
-    if (cell.terrain === 'water') return -0.16;
+    if (cell.terrain === 'water') return -0.05; // poca rasa, acima da tampa da ilha
     return 0;
   }
 
   // ---- animated grass + water-tile materials (patch built-in Lambert to keep shadows) ----
   grassU = { value: 0 };
-  const grassMat = new THREE.MeshLambertMaterial({ color: 0x82be52 });
-  grassMat.onBeforeCompile = (sh) => {
-    sh.uniforms.uTime = grassU;
-    sh.vertexShader = 'varying vec2 vGXZ;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vGXZ = (modelMatrix * vec4(position,1.0)).xz;');
-    sh.fragmentShader = 'varying vec2 vGXZ;\nuniform float uTime;\n' + sh.fragmentShader.replace('#include <color_fragment>',
-      '#include <color_fragment>\n { float n = sin(vGXZ.x*2.3)*sin(vGXZ.y*2.1); float wind = sin((vGXZ.x+vGXZ.y)*1.1 + uTime*1.6);' +
-      ' diffuseColor.rgb *= (1.0 + n*0.06 + wind*0.05); diffuseColor.g *= (1.0 + max(0.0,n)*0.05); }');
-  };
+  // grama animada (vento) — patched Lambert p/ manter sombras; paleta de varios verdes ("pintada a mao")
+  function makeGrass(color) {
+    const m = new THREE.MeshLambertMaterial({ color: color });
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.uTime = grassU;
+      sh.vertexShader = 'varying vec2 vGXZ;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vGXZ = (modelMatrix * vec4(position,1.0)).xz;');
+      sh.fragmentShader = 'varying vec2 vGXZ;\nuniform float uTime;\n' + sh.fragmentShader.replace('#include <color_fragment>',
+        '#include <color_fragment>\n { float n = sin(vGXZ.x*2.3)*sin(vGXZ.y*2.1); float wind = sin((vGXZ.x+vGXZ.y)*1.1 + uTime*1.6);' +
+        ' diffuseColor.rgb *= (1.0 + n*0.06 + wind*0.05); diffuseColor.g *= (1.0 + max(0.0,n)*0.05); }');
+    };
+    return m;
+  }
+  const grassMats = [makeGrass(0x86B854), makeGrass(0x77AE49), makeGrass(0x69A340), makeGrass(0x8FBC5A), makeGrass(0x7BB04C)];
+  function grassFor(c) { const h = Math.sin(c.q * 127.1 + c.r * 311.7) * 43758.5453, f = h - Math.floor(h); return grassMats[Math.floor(f * grassMats.length) % grassMats.length]; }
   const waterTileMat = new THREE.MeshLambertMaterial({ color: 0x4f9be0, transparent: true, opacity: 0.96 });
   waterTileMat.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = grassU;
@@ -110,7 +117,7 @@ window.EEP.Renderer = function (canvas, game) {
   for (const [k, c] of level.cells) {
     c._x = c._wx - ccx; c._z = c._wz - ccz; c._y = topY(c);
     let tm;
-    if (c.terrain === 'land') tm = grassMat;
+    if (c.terrain === 'land') tm = grassFor(c);
     else if (c.terrain === 'water') tm = waterTileMat;
     else tm = new THREE.MeshLambertMaterial({ color: terrainColor(c) });
     const m = new THREE.Mesh(tileGeo, tm);
@@ -147,14 +154,37 @@ window.EEP.Renderer = function (canvas, game) {
         'vec3 col = mix(uA, uB, smoothstep(0.32, 0.78, m));' +
         'gl_FragColor = vec4(col,1.0); }'
     });
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 44, D2 + 44), waterMat);
-    water.rotation.x = -Math.PI / 2; water.position.y = -0.58; scene.add(water);
-    const shore = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 2.6, D2 + 2.6), new THREE.MeshBasicMaterial({ color: 0xb2e2f6 }));
-    shore.rotation.x = -Math.PI / 2; shore.position.y = -0.5; scene.add(shore);
-    const base = new THREE.Mesh(new THREE.BoxGeometry(W2, 2.0, D2), new THREE.MeshLambertMaterial({ color: 0x6b4a2f }));
-    base.position.y = -1.2; base.receiveShadow = true; scene.add(base);
-    const skirt = new THREE.Mesh(new THREE.BoxGeometry(W2 + 0.2, 0.4, D2 + 0.2), new THREE.MeshLambertMaterial({ color: 0x86B24E }));
-    skirt.position.y = -0.3; skirt.receiveShadow = true; scene.add(skirt);
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 60, D2 + 60), waterMat);
+    water.rotation.x = -Math.PI / 2; water.position.y = SEA_Y - 0.05; scene.add(water);
+    const shore = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 2.4, D2 + 2.4), new THREE.MeshBasicMaterial({ color: 0xc4ecf8, transparent: true, opacity: 0.9 }));
+    shore.rotation.x = -Math.PI / 2; shore.position.y = SEA_Y + 0.02; scene.add(shore);
+
+    // ---- ilha flutuante: bloco de solo em camadas (corte de terreno, cantos levemente chanfrados) ----
+    const island = new THREE.Group(); scene.add(island);
+    const soil = [
+      { c: 0x84B24A, h: 0.34, k: 0.00 },  // grama (topo)
+      { c: 0xCEA36C, h: 0.30, k: 0.10 },  // terra clara
+      { c: 0xB9884F, h: 0.30, k: 0.22 },  // terra media
+      { c: 0x96683D, h: 0.34, k: 0.36 },  // terra escura
+      { c: 0x6F4A2B, h: 0.70, k: 0.54 }   // terra profunda (base)
+    ];
+    let ty = -0.10;
+    for (const L of soil) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(W2 - L.k * 2, L.h, D2 - L.k * 2), new THREE.MeshLambertMaterial({ color: L.c }));
+      m.position.y = ty - L.h / 2; m.receiveShadow = true; island.add(m); ty -= L.h;
+    }
+    // pedras low-poly encravadas nas laterais do solo
+    const rockMat = new THREE.MeshLambertMaterial({ color: 0x9a938a });
+    const hW = W2 / 2, hD = D2 / 2, depths = [-0.5, -0.72, -0.96];
+    let rk = 0;
+    function embed(x, z, y, s) { const r = new THREE.Mesh(new THREE.DodecahedronGeometry(s), rockMat); r.position.set(x, y, z); r.rotation.set(rk * 1.1, rk * 0.7, rk * 0.5); rk++; island.add(r); }
+    for (let i = 1; i <= 4; i++) {
+      const t = i / 5;
+      embed(-hW + t * W2, -hD + 0.04, depths[i % 3], 0.15 + (i % 2) * 0.05);
+      embed(-hW + t * W2, hD - 0.04, depths[(i + 1) % 3], 0.14 + (i % 2) * 0.06);
+      embed(-hW + 0.04, -hD + t * D2, depths[(i + 2) % 3], 0.16);
+      embed(hW - 0.04, -hD + t * D2, depths[i % 3], 0.13 + (i % 2) * 0.05);
+    }
   })();
   buildDecor();
 
@@ -309,7 +339,12 @@ window.EEP.Renderer = function (canvas, game) {
       const c2 = cone(0.2, 0.4, 0x256b34); c2.position.y = 0.72 + hgt; g.add(c2);
     } else if (type === 'forest') {
       const n = it.n || 6;
-      for (let i = 0; i < n; i++) { const a = i * 2.399, rr = 0.35 + (i % 3) * 0.25; const t = buildProp('tree', { v: i % 3 }); t.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); t.scale.setScalar(0.8 + (i % 2) * 0.25); g.add(t); }
+      for (let i = 0; i < n; i++) {
+        const a = i * 2.399, rr = 0.32 + (i % 3) * 0.26;
+        const t = (i % 5 === 4) ? buildProp('bush', {}) : buildProp('tree', { v: i % 3 });
+        t.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); t.scale.setScalar(0.78 + (i % 3) * 0.18); g.add(t);
+      }
+      const lg = buildProp('log', {}); lg.position.set(0.3, 0, -0.42); lg.rotation.y = 0.6; g.add(lg);
     } else if (type === 'volcano') {
       const mt = new THREE.Mesh(new THREE.ConeGeometry(1.7, 2.3, 7), mat(0x7a5a3c)); mt.position.y = 1.15; g.add(mt);
       const crater = cyl(0.5, 0.7, 0.25, 0x3a2a20); crater.position.y = 2.25; g.add(crater);
@@ -347,13 +382,20 @@ window.EEP.Renderer = function (canvas, game) {
       const basin = box(0.9, 0.14, 0.5, 0xd8dde1); basin.position.set(0.95, 0.09, 0); g.add(basin);
       const bw2 = box(0.78, 0.08, 0.4, 0x5fb0e0); bw2.position.set(0.95, 0.13, 0); g.add(bw2);
     } else if (type === 'boat') {
-      const hull = box(0.9, 0.28, 0.4, 0xb23b34); hull.position.y = 0.14; g.add(hull);
-      const deck = box(0.9, 0.06, 0.4, 0xf0f0f0); deck.position.y = 0.3; g.add(deck);
-      const cabin = box(0.22, 0.22, 0.34, 0xf0f0f0); cabin.position.set(-0.28, 0.4, 0); g.add(cabin);
-      const c1 = box(0.4, 0.16, 0.14, 0x2a7bbf); c1.position.set(0.12, 0.4, 0.1); g.add(c1);
-      const c2 = box(0.4, 0.16, 0.14, 0xd9a233); c2.position.set(0.12, 0.4, -0.1); g.add(c2);
+      const hull = box(0.96, 0.24, 0.42, 0xf2f2ef); hull.position.y = 0.15; g.add(hull);
+      const stripe = box(0.96, 0.08, 0.42, 0x2a6fb0); stripe.position.y = 0.06; g.add(stripe);
+      const deck = box(0.8, 0.05, 0.34, 0xdfe3e6); deck.position.y = 0.29; g.add(deck);
+      const cabin = box(0.24, 0.22, 0.32, 0xf6f6f4); cabin.position.set(-0.3, 0.41, 0); g.add(cabin);
+      const c1 = box(0.34, 0.16, 0.14, 0x2a7bbf); c1.position.set(0.14, 0.41, 0.11); g.add(c1);
+      const c2 = box(0.34, 0.16, 0.14, 0xd9a233); c2.position.set(0.14, 0.41, -0.11); g.add(c2);
+      const c3 = box(0.3, 0.15, 0.24, 0x3f9b57); c3.position.set(0.22, 0.57, 0); g.add(c3);
+      const wake = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.5), new THREE.MeshBasicMaterial({ color: 0xdff2fb, transparent: true, opacity: 0.5 }));
+      wake.rotation.x = -Math.PI / 2; wake.position.set(-0.95, 0.006, 0); g.add(wake);
     } else if (type === 'road') {
-      const r = box(it.len || 1, 0.05, 0.34, 0x3a3f45); r.position.y = 0.03; g.add(r);
+      const len = it.len || 1;
+      const r = box(len, 0.06, 0.36, 0x41464c); r.position.y = 0.03; g.add(r);
+      const nd = Math.max(1, Math.round(len / 0.55));
+      for (let i = 0; i < nd; i++) { const d = box(0.2, 0.015, 0.05, 0xeae7d8); d.position.set(-len / 2 + (i + 0.5) * (len / nd), 0.066, 0); g.add(d); }
     } else if (type === 'windturbine') {
       const pole = cyl(0.05, 0.07, 1.3, 0xededed); pole.position.y = 0.65; g.add(pole);
       const rotor = new THREE.Group(); rotor.position.set(0, 1.3, 0.1);
@@ -362,6 +404,50 @@ window.EEP.Renderer = function (canvas, game) {
       rotor.userData.spin = 1.8; g.add(rotor);
     } else if (type === 'rock') {
       const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18), mat(0x9aa0a6)); r.position.y = 0.12; g.add(r);
+    } else if (type === 'pier') {
+      const planks = box(1.3, 0.06, 0.42, 0x9a6b3f); planks.position.set(0.55, 0.12, 0); g.add(planks);
+      for (let i = 0; i < 4; i++) { const p = cyl(0.03, 0.03, 0.34, 0x7a5230); p.position.set(0.12 + i * 0.34, -0.02, i % 2 ? 0.15 : -0.15); g.add(p); }
+    } else if (type === 'rowboat') {
+      const hull = box(0.52, 0.14, 0.22, 0x8a5a34); hull.position.y = 0.07; g.add(hull);
+      const inner = box(0.4, 0.06, 0.13, 0x6b4527); inner.position.y = 0.12; g.add(inner);
+    } else if (type === 'fence') {
+      const n = it.n || 4, len = it.len || 1.4, seg = len / n;
+      const rail = box(len, 0.03, 0.03, 0x8a6b45); rail.position.set(len / 2 - seg / 2, 0.17, 0); g.add(rail);
+      for (let i = 0; i < n; i++) { const p = box(0.04, 0.24, 0.04, 0x7a5230); p.position.set(i * seg, 0.12, 0); g.add(p); }
+    } else if (type === 'crate') {
+      const b = box(0.22, 0.22, 0.22, 0xb98a4e); b.position.y = 0.11; g.add(b);
+      const b2 = box(0.2, 0.2, 0.2, 0xa87a42); b2.position.set(0.17, 0.1, 0.06); g.add(b2);
+    } else if (type === 'tractor') {
+      const body = box(0.34, 0.18, 0.2, 0xd84f3a); body.position.y = 0.19; g.add(body);
+      const cab = box(0.16, 0.16, 0.18, 0xf0c04a); cab.position.set(-0.08, 0.35, 0); g.add(cab);
+      const wf1 = cyl(0.08, 0.08, 0.08, 0x2b2b2b); wf1.rotation.x = Math.PI / 2; wf1.position.set(0.14, 0.09, 0.11); g.add(wf1);
+      const wf2 = cyl(0.08, 0.08, 0.08, 0x2b2b2b); wf2.rotation.x = Math.PI / 2; wf2.position.set(0.14, 0.09, -0.11); g.add(wf2);
+      const wb1 = cyl(0.13, 0.13, 0.09, 0x2b2b2b); wb1.rotation.x = Math.PI / 2; wb1.position.set(-0.12, 0.13, 0.12); g.add(wb1);
+      const wb2 = cyl(0.13, 0.13, 0.09, 0x2b2b2b); wb2.rotation.x = Math.PI / 2; wb2.position.set(-0.12, 0.13, -0.12); g.add(wb2);
+    } else if (type === 'tank') {
+      const body = cyl(0.3, 0.3, 0.5, 0xc7ccd0); body.position.y = 0.25; g.add(body);
+      const cap = sph(0.3, 0xd6dadd); cap.scale.y = 0.4; cap.position.y = 0.5; g.add(cap);
+      const band = cyl(0.31, 0.31, 0.06, 0x9aa2a8); band.position.y = 0.3; g.add(band);
+    } else if (type === 'pipe') {
+      const len = it.len || 1.0;
+      const p = cyl(0.06, 0.06, len, 0xb6bcc2); p.rotation.z = Math.PI / 2; p.position.y = 0.22; g.add(p);
+      const s1 = box(0.06, 0.22, 0.06, 0x9aa2a8); s1.position.set(-len / 2 + 0.1, 0.11, 0); g.add(s1);
+      const s2 = box(0.06, 0.22, 0.06, 0x9aa2a8); s2.position.set(len / 2 - 0.1, 0.11, 0); g.add(s2);
+    } else if (type === 'transformer') {
+      const b = box(0.3, 0.3, 0.24, 0x6f7a86); b.position.y = 0.15; g.add(b);
+      const f1 = cyl(0.03, 0.03, 0.3, 0xced3d7); f1.position.set(-0.08, 0.42, 0); g.add(f1);
+      const f2 = cyl(0.03, 0.03, 0.3, 0xced3d7); f2.position.set(0.08, 0.42, 0); g.add(f2);
+    } else if (type === 'bush') {
+      const b1 = sph(0.2, 0x3f8a45); b1.scale.y = 0.7; b1.position.y = 0.12; g.add(b1);
+      const b2 = sph(0.15, 0x4f9a52); b2.scale.y = 0.7; b2.position.set(0.16, 0.1, 0.06); g.add(b2);
+    } else if (type === 'log') {
+      const l = cyl(0.08, 0.08, 0.5, 0x7a5230); l.rotation.z = Math.PI / 2; l.position.y = 0.08; g.add(l);
+    } else if (type === 'deadtree') {
+      const tr = cyl(0.05, 0.07, 0.6, 0x4a3a2c); tr.position.y = 0.3; g.add(tr);
+      const b1 = box(0.24, 0.04, 0.04, 0x4a3a2c); b1.position.set(0.08, 0.5, 0); b1.rotation.z = 0.5; g.add(b1);
+      const b2 = box(0.2, 0.04, 0.04, 0x4a3a2c); b2.position.set(-0.06, 0.42, 0); b2.rotation.z = -0.6; g.add(b2);
+    } else if (type === 'volrock') {
+      const r = new THREE.Mesh(new THREE.DodecahedronGeometry(it.s2 || 0.2), mat(0x3a3330)); r.position.y = 0.1; r.rotation.set(0.5, 0.7, 0.2); g.add(r);
     }
     return g;
   }
@@ -448,7 +534,7 @@ window.EEP.Renderer = function (canvas, game) {
         else if (d < w + h) { const e = d - w; x = Rx; z = -Rz + e; dx = 0; dz = 1; }
         else if (d < 2 * w + h) { const e = d - w - h; x = Rx - e; z = Rz; dx = -1; dz = 0; }
         else { const e = d - 2 * w - h; x = -Rx; z = Rz - e; dx = 0; dz = -1; }
-        o.position.set(x, -0.42 + Math.sin(t * 1.4 + o.userData.boat.phase) * 0.03, z);
+        o.position.set(x, SEA_Y + Math.sin(t * 1.4 + o.userData.boat.phase) * 0.03, z);
         o.rotation.y = Math.atan2(-dz, dx);
       }
     });

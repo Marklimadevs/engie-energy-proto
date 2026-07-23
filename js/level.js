@@ -117,7 +117,8 @@ window.EEP = window.EEP || {};
       field: ['0,1', '1,1', '2,1', '0,2', '1,2', '2,2', '0,3', '1,3'],
       dirt: ['4,0', '5,0', '4,1', '5,1', '6,1', '4,2', '5,2', '8,2', '9,2', '9,3', '8,3'],
       hills: ['9,0', '8,0', '8,1', '9,1'],
-      water: ['4,4', '5,4', '6,4', '4,5', '5,5', '6,5'],
+      water: ['4,4', '5,4', '4,5', '5,5', '6,5', '5,6'],
+      sand: ['6,4', '3,4', '3,5', '4,6', '6,6'],
       nodes: [{ col: 8, row: 6, type: 'cidade', demand: 120 }]
     }, grid);
     return {
@@ -156,6 +157,23 @@ window.EEP = window.EEP || {};
         { type: 'rock', col: 2.2, row: 8.0 }, { type: 'rock', col: 8.4, row: 4.0 }, { type: 'rock', col: 7.4, row: 4.7 },
         { type: 'road', col: 4.0, row: 2.6, len: 7, rot: 0 },
         { type: 'road', col: 3.0, row: 4.4, len: 5, rot: Math.PI / 2 },
+        // fazenda — cercas, engradados, trator
+        { type: 'fence', col: 0.3, row: 3.5, len: 2.2, n: 5, rot: 0 },
+        { type: 'fence', col: 2.6, row: 5.8, len: 1.8, n: 4, rot: 0 },
+        { type: 'crate', col: 1.5, row: 2.7 }, { type: 'crate', col: 2.2, row: 3.5 },
+        { type: 'tractor', col: 2.4, row: 4.0, rot: -0.6 },
+        // industria — tanques, tubulacao, transformadores
+        { type: 'tank', col: 6.4, row: 1.9 }, { type: 'tank', col: 6.9, row: 2.1, s: 0.9 },
+        { type: 'pipe', col: 6.0, row: 2.3, len: 1.2, rot: 0 },
+        { type: 'transformer', col: 5.5, row: 2.5 }, { type: 'transformer', col: 5.9, row: 2.6 },
+        // vulcao — rochas vulcanicas e arvores queimadas
+        { type: 'volrock', col: 7.7, row: 1.9 }, { type: 'volrock', col: 8.7, row: 1.9, s2: 0.16 },
+        { type: 'volrock', col: 8.4, row: 2.3 }, { type: 'deadtree', col: 7.6, row: 2.3 }, { type: 'deadtree', col: 8.9, row: 1.3 },
+        // lago — pier, bote a remo, arbustos
+        { type: 'pier', col: 4.2, row: 3.55, rot: Math.PI / 2, y: -0.02 },
+        { type: 'rowboat', col: 4.7, row: 4.8, y: -0.05, rot: 0.5 },
+        { type: 'bush', col: 3.6, row: 5.2 }, { type: 'bush', col: 6.6, row: 5.3 },
+        { type: 'log', col: 7.2, row: 5.6, rot: 0.8 },
         { type: 'boat', wx: -10, wz: 5.2, y: -0.42, rot: 0.5, s: 1.1 }
       ]
     };
