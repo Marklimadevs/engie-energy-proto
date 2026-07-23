@@ -157,6 +157,10 @@ window.EEP = window.EEP || {};
         { type: 'rock', col: 2.2, row: 8.0 }, { type: 'rock', col: 8.4, row: 4.0 }, { type: 'rock', col: 7.4, row: 4.7 },
         { type: 'road', col: 4.0, row: 2.6, len: 7, rot: 0 },
         { type: 'road', col: 3.0, row: 4.4, len: 5, rot: Math.PI / 2 },
+        // iluminacao urbana — acende quando a rede conecta
+        { type: 'trafficlight', col: 3.2, row: 2.15 },
+        { type: 'lamp', col: 1.6, row: 2.15 }, { type: 'lamp', col: 5.2, row: 2.15 }, { type: 'lamp', col: 6.9, row: 3.0 },
+        { type: 'lamp', col: 3.45, row: 3.9 }, { type: 'lamp', col: 2.55, row: 5.3 }, { type: 'lamp', col: 3.45, row: 6.3 },
         // fazenda — cercas, engradados, trator
         { type: 'fence', col: 0.3, row: 3.5, len: 2.2, n: 5, rot: 0 },
         { type: 'fence', col: 2.6, row: 5.8, len: 1.8, n: 4, rot: 0 },

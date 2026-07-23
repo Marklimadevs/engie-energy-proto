@@ -127,6 +127,7 @@ window.addEventListener('DOMContentLoaded', function () {
       const d = indDisplay(key, s), e = indEls[key]; if (!e) return;
       e.v.textContent = d.text; e.bar.style.width = Math.max(0, Math.min(100, d.width)) + '%'; e.bar.className = d.cls;
     });
+    if (app.renderer && app.renderer.setLightsOn) app.renderer.setLightsOn(s.poweredNodes > 0);
   }
 
   function onHint(msg) {

@@ -5,7 +5,7 @@ window.EEP.Renderer = function (canvas, game) {
   const Hex = window.EEP.Hex;
   const level = game.level;
   const grid = level.grid || window.EEP.Grid.hex;
-  let waterMat = null, grassU = null, shoreMat = null;
+  let waterMat = null, grassU = null, shoreMat = null, lightsOn = false;
 
   const HS = 1;          // hex size in world units
   const TH = 0.34;       // tile thickness
@@ -450,6 +450,22 @@ window.EEP.Renderer = function (canvas, game) {
       const b2 = box(0.2, 0.04, 0.04, 0x4a3a2c); b2.position.set(-0.06, 0.42, 0); b2.rotation.z = -0.6; g.add(b2);
     } else if (type === 'volrock') {
       const r = new THREE.Mesh(new THREE.DodecahedronGeometry(it.s2 || 0.2), mat(0x3a3330)); r.position.y = 0.1; r.rotation.set(0.5, 0.7, 0.2); g.add(r);
+    } else if (type === 'lamp') {
+      const pole = cyl(0.035, 0.05, 0.72, 0x39414a); pole.position.y = 0.36; g.add(pole);
+      const arm = box(0.22, 0.04, 0.05, 0x39414a); arm.position.set(0.09, 0.7, 0); g.add(arm);
+      const head = box(0.17, 0.08, 0.12, 0x2b3138); head.position.set(0.19, 0.66, 0); g.add(head);
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), new THREE.MeshLambertMaterial({ color: 0xfff1c2, emissive: 0x000000 }));
+      bulb.position.set(0.19, 0.6, 0); bulb.userData.bulb = 0xffd27a; g.add(bulb);
+      const halo = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffdd99, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      halo.position.set(0.19, 0.58, 0); halo.userData.halo = 0.5; g.add(halo);
+      const pool = new THREE.Mesh(new THREE.CircleGeometry(0.34, 18), new THREE.MeshBasicMaterial({ color: 0xffdd99, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      pool.rotation.x = -Math.PI / 2; pool.position.set(0.19, 0.02, 0); pool.userData.halo = 0.3; g.add(pool);
+    } else if (type === 'trafficlight') {
+      const pole = cyl(0.035, 0.05, 0.6, 0x33393f); pole.position.y = 0.3; g.add(pole);
+      const casing = box(0.12, 0.34, 0.1, 0x23282d); casing.position.set(0, 0.64, 0); g.add(casing);
+      const mk = (y, col) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.037, 8, 6), new THREE.MeshLambertMaterial({ color: col, emissive: 0x000000 })); m.position.set(0, y, 0.056); g.add(m); return m; };
+      const rL = mk(0.74, 0xe5533d), yL = mk(0.64, 0xf4c020), gL = mk(0.54, 0x33cc55);
+      g.userData.traffic = [rL, yL, gL];
     }
     return g;
   }
@@ -518,6 +534,14 @@ window.EEP.Renderer = function (canvas, game) {
     if (waterMat) waterMat.uniforms.uNight.value = on ? 1 : 0;
     render();
   }
+  function setLightsOn(on) {
+    lightsOn = on;
+    scene.traverse(o => {
+      if (o.userData.bulb !== undefined) o.material.emissive.setHex(on ? o.userData.bulb : 0x000000);
+      if (o.userData.halo !== undefined) o.material.opacity = on ? o.userData.halo : 0;
+    });
+    render();
+  }
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
@@ -562,6 +586,10 @@ window.EEP.Renderer = function (canvas, game) {
         else { const e = d - 2 * w - h; x = -Rx; z = Rz - e; dx = 0; dz = -1; }
         o.position.set(x, SEA_Y + Math.sin(t * 1.4 + o.userData.boat.phase) * 0.03, z);
         o.rotation.y = Math.atan2(-dz, dx);
+      } else if (o.userData.traffic) {
+        const arr = o.userData.traffic;
+        if (!lightsOn) { for (let i = 0; i < 3; i++) arr[i].material.emissive.setHex(0x000000); }
+        else { const ph = Math.floor(t / 1.4) % 3, act = ph === 0 ? 2 : (ph === 1 ? 1 : 0), C = [0xe5533d, 0xf4c020, 0x33cc55]; for (let i = 0; i < 3; i++) arr[i].material.emissive.setHex(i === act ? C[i] : 0x000000); }
       }
     });
   }
@@ -571,5 +599,5 @@ window.EEP.Renderer = function (canvas, game) {
 
   resize();
   canvas.__raf = requestAnimationFrame(loop);
-  return { draw, hitTest, resize, rotate, snap, zoom: zoomBy, setNight };
+  return { draw, hitTest, resize, rotate, snap, zoom: zoomBy, setNight, setLightsOn };
 };
