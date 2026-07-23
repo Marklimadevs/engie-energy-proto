@@ -379,6 +379,7 @@ window.EEP.Renderer = function (canvas, game) {
       m.position.set(pos.x, it.y != null ? it.y : 0, pos.z);
       if (it.rot) m.rotation.y = it.rot;
       if (it.s) m.scale.multiplyScalar(it.s);
+      if (it.type === 'boat') m.userData.boat = { speed: it.speed || 0.12, phase: it.phase || 0 };
       dg.add(m);
     }
   }
@@ -438,6 +439,12 @@ window.EEP.Renderer = function (canvas, game) {
           c.material.opacity = Math.max(0, 0.85 * (1 - f));
           c.scale.setScalar(0.5 + f * 1.1);
         }
+      } else if (o.userData.boat) {
+        const rx = bw / 2 + 3.6, rz = bd / 2 + 3.6;
+        const phi = t * o.userData.boat.speed + o.userData.boat.phase;
+        o.position.set(Math.cos(phi) * rx, -0.42 + Math.sin(t * 1.4 + o.userData.boat.phase) * 0.03, Math.sin(phi) * rz);
+        const vx = -rx * Math.sin(phi), vz = rz * Math.cos(phi);
+        o.rotation.y = Math.atan2(-vz, vx);
       }
     });
   }

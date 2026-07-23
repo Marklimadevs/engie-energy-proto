@@ -142,12 +142,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // ---- timer + events ----
   function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
-  function startTimer(full) {
-    stopTimer();
-    if (full) { timeLeft = app.level.time || 120; eventFired = false; }
-    updateTimer();
-    if (timeLeft > 0) timerId = setInterval(tick, 1000);
-  }
+  function startTimer(full) { stopTimer(); timeLeft = 0; eventFired = true; /* cronometro removido */ }
   function tick() {
     timeLeft--; updateTimer();
     const ev = app.level.event;
@@ -155,8 +150,9 @@ window.addEventListener('DOMContentLoaded', function () {
     if (timeLeft <= 0) { stopTimer(); showModal(app.game.simulate(), true); }
   }
   function updateTimer() {
+    const e = el('timer'); if (!e) return;
     const t = Math.max(0, timeLeft), m = Math.floor(t / 60), s = t % 60;
-    const e = el('timer'); e.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    e.textContent = m + ':' + (s < 10 ? '0' : '') + s;
     e.className = 'timer' + (t <= 15 ? ' low' : '');
   }
   function fireEvent(ev) {
