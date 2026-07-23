@@ -154,12 +154,12 @@ window.EEP.Game = function (level) {
 
   function simulate() {
     const g = gather();
-    const phases = level.phases || ['dia'];
+    const winPhases = level.phases || ['dia'];
     const phaseRes = {};
+    for (const ph of ['dia', 'noite']) phaseRes[ph] = deliveredForPhase(ph, g); // sempre calcula dia e noite (exibicao)
     let worst = Infinity, worstLoss = 0;
-    for (const ph of phases) {
-      const r = deliveredForPhase(ph, g);
-      phaseRes[ph] = r;
+    for (const ph of winPhases) {
+      const r = phaseRes[ph];
       if (r.delivered < worst) { worst = r.delivered; worstLoss = r.loss; }
     }
     if (!isFinite(worst)) worst = 0;

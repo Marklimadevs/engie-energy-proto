@@ -14,6 +14,19 @@ window.addEventListener('DOMContentLoaded', function () {
     estab: 'Estabilidade', inov: 'Inovacao', emis: 'Emissoes (limpo)',
     lucro: 'Lucro', sat: 'Satisfacao'
   };
+  // HUD lateral: mostra sempre os 8 indicadores (icones de linha, sem emoji)
+  const IND_ORDER = ['energia', 'sust', 'lucro', 'custo', 'sat', 'emis', 'estab', 'inov'];
+  const IND_META = {
+    energia: { label: 'Energia', full: 'Energia disponivel', color: '#2E9BE0', p: '<path d="M13 3 5 13h5l-1 8 9-11h-6z"/>' },
+    sust: { label: 'Sustentabilidade', full: 'Sustentabilidade', color: '#22B99A', p: '<path d="M4 20C4 12 10 6 20 6c0 10-6 14-16 14z"/><path d="M9 19c2-5 5-8 9-10"/>' },
+    lucro: { label: 'Lucro', full: 'Lucro', color: '#22B99A', p: '<path d="M3 17l6-6 4 4 7-7"/><path d="M17 8h4v4"/>' },
+    custo: { label: 'Custo', full: 'Custo operacional', color: '#F4A81D', p: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.7 9.6c0-1.1 1-1.7 2.3-1.7s2.3.6 2.3 1.6c0 2.2-4.6 1.1-4.6 3.4 0 1 1 1.7 2.3 1.7s2.3-.6 2.3-1.7"/>' },
+    sat: { label: 'Satisfacao', full: 'Satisfacao da populacao', color: '#22B99A', p: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.1 2.1 1.6 3.5 1.6s2.6-.5 3.5-1.6"/><path d="M9 9.5h.01M15 9.5h.01"/>' },
+    emis: { label: 'Emissoes', full: 'Emissoes de carbono (limpo)', color: '#7b8a99', p: '<path d="M3 20v-8l5 3v-3l5 3v-4l6 3v6z"/><path d="M8 8c0-1 1-1 1-2s-1-1-1-2"/>' },
+    estab: { label: 'Estabilidade', full: 'Estabilidade da rede', color: '#0F7FD4', p: '<path d="M3 12h4l2-5 3 10 2-5h7"/>' },
+    inov: { label: 'Inovacao', full: 'Inovacao', color: '#E8930B', p: '<path d="M9.5 18.5h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.6 1 1.3 1 2.4h6c0-1.1.3-1.8 1-2.4A6 6 0 0 0 12 3z"/>' }
+  };
+  function indIcon(key) { const m = IND_META[key]; return '<svg class="ind-ic" viewBox="0 0 24 24" fill="none" stroke="' + m.color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + m.p + '</svg>'; }
   const MEDALS = [
     { id: '3estrelas', name: '3 Estrelas', cond: s => s.stars === 3 },
     { id: 'limpa', name: 'Rede Limpa', cond: s => s.win && s.emis >= 90 },
@@ -58,7 +71,7 @@ window.addEventListener('DOMContentLoaded', function () {
       b.textContent = 'Fase ' + i;
       if (i === app.level.id) b.className = 'on';
       if (i > progress.unlocked) b.className = 'locked';
-      b.addEventListener('click', () => { if (i <= progress.unlocked) loadLevel(i - 1); });
+      b.addEventListener('click', () => { if (i <= progress.unlocked) { el('pausemodal').hidden = true; loadLevel(i - 1); } });
       bar.appendChild(b);
     }
   }
@@ -103,9 +116,10 @@ window.addEventListener('DOMContentLoaded', function () {
   function buildIndicators() {
     const box = el('indicators'); box.innerHTML = '';
     for (const k in indEls) delete indEls[k];
-    app.level.indicators.forEach(key => {
-      const wrap = document.createElement('div'); wrap.className = 'ind';
-      wrap.innerHTML = '<div class="ind-row"><span>' + IND_LABEL[key] + '</span><b></b></div><div class="bar"><i></i></div>';
+    IND_ORDER.forEach(key => {
+      const m = IND_META[key];
+      const wrap = document.createElement('div'); wrap.className = 'ind'; wrap.title = m.full || m.label;
+      wrap.innerHTML = '<div class="ind-row"><span class="ind-name">' + indIcon(key) + '<span>' + m.label + '</span></span><b></b></div><div class="bar"><i></i></div>';
       box.appendChild(wrap);
       indEls[key] = { v: wrap.querySelector('b'), bar: wrap.querySelector('i') };
     });
@@ -113,22 +127,51 @@ window.addEventListener('DOMContentLoaded', function () {
 
   function indDisplay(key, s) {
     if (key === 'energia') {
-      const d = s.phaseRes[app.phaseView] ? s.phaseRes[app.phaseView].delivered : s.delivered;
-      return { text: Math.round(d) + ' / ' + Math.round(s.totalDemand), width: Math.min(100, d / s.totalDemand * 100), cls: s.meetsEnergy ? 'green' : '' };
+      const pr = s.phaseRes[app.phaseView] || { delivered: s.delivered };
+      const d = pr.delivered;
+      return { text: Math.round(d) + ' / ' + Math.round(s.totalDemand), width: Math.min(100, d / s.totalDemand * 100), cls: (d >= s.totalDemand && s.allPowered) ? 'green' : '' };
     }
     if (key === 'custo') return { text: 'R$ ' + Math.round(s.cost) + ' / ' + app.level.budget, width: Math.min(100, s.cost / app.level.budget * 100), cls: s.cost > app.level.budget ? 'low' : 'amber' };
     const v = s[key], tgt = (app.level.targets || {})[key];
-    return { text: Math.round(v) + (tgt ? ' / ' + tgt : ''), width: v, cls: (tgt && v < tgt) ? 'low' : 'green' };
+    let cls;
+    if (tgt) cls = v < tgt ? 'low' : 'green';
+    else cls = v < 35 ? 'low' : (v < 55 ? 'amber' : 'green'); // "nenhum indicador pode ficar muito baixo"
+    return { text: Math.round(v) + (tgt ? ' / ' + tgt : ''), width: v, cls };
   }
 
   function refresh() {
     const s = app.game.simulate();
-    app.level.indicators.forEach(key => {
+    IND_ORDER.forEach(key => {
       const d = indDisplay(key, s), e = indEls[key]; if (!e) return;
       e.v.textContent = d.text; e.bar.style.width = Math.max(0, Math.min(100, d.width)) + '%'; e.bar.className = d.cls;
     });
     if (app.renderer && app.renderer.setLightsOn) app.renderer.setLightsOn(s.poweredNodes > 0);
+    checkPnd();
   }
+
+  // ---- cartas de P&D: ao instalar uma peca de inovacao, abre o dossie do projeto ENGIE ----
+  const PND_INFO = {
+    ia: { title: 'IA de Previsao de Geracao', desc: 'Modelos de inteligencia artificial preveem a geracao solar e eolica e otimizam o despacho da rede.', bullets: ['Aumenta a eficiencia da rede', 'Reduz o desperdicio de energia', 'Melhora a previsao de geracao renovavel'] },
+    sensor: { title: 'Sensores Inteligentes', desc: 'Sensores monitoram os ativos em tempo real e identificam falhas antes que virem problema.', bullets: ['Encontram falhas rapidamente', 'Diminuem a manutencao', 'Aumentam a estabilidade da rede'] },
+    drone: { title: 'Drone de Inspecao', desc: 'Drones inspecionam linhas e usinas em locais de dificil acesso, com seguranca.', bullets: ['Reduz o custo de inspecao', 'Aumenta a seguranca da operacao', 'Agiliza a manutencao'] },
+    pnd: { title: 'Projeto de P&D ENGIE', desc: 'Carta especial que ativa um projeto real de Pesquisa, Desenvolvimento e Inovacao da ENGIE.', bullets: ['Ativa um projeto de inovacao', 'Aumenta muito a inovacao da matriz', 'Desbloqueia conteudo do projeto'] }
+  };
+  let seenPnd = new Set();
+  function checkPnd() {
+    if (!app.game) return;
+    for (const [, p] of app.game.state.pieces) {
+      if (PND_INFO[p.type] && !seenPnd.has(p.type)) { seenPnd.add(p.type); showPnd(p.type); break; }
+    }
+  }
+  function showPnd(type) {
+    const info = PND_INFO[type]; if (!info) return;
+    el('pnd-title').textContent = info.title;
+    el('pnd-desc').textContent = info.desc;
+    el('pnd-bullets').innerHTML = info.bullets.map(b => '<li>' + escapeHtml(b) + '</li>').join('');
+    stopTimer();
+    el('pndmodal').hidden = false;
+  }
+  function closePnd() { el('pndmodal').hidden = true; if (timeLeft > 0) startTimer(false); }
 
   function onHint(msg) {
     if (msg) { el('hint').textContent = msg; return; }
@@ -141,7 +184,13 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // ---- timer + events ----
   function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
-  function startTimer(full) { stopTimer(); timeLeft = 0; eventFired = true; /* cronometro removido */ }
+  function startTimer(full) {
+    stopTimer();
+    if (full) { timeLeft = app.level.time || 120; eventFired = !app.level.event; }
+    const e = el('timer'); if (e) e.hidden = false;
+    updateTimer();
+    if (timeLeft > 0) timerId = setInterval(tick, 1000);
+  }
   function tick() {
     timeLeft--; updateTimer();
     const ev = app.level.event;
@@ -252,6 +301,7 @@ window.addEventListener('DOMContentLoaded', function () {
     app.game = EEP.Game(app.level);
     app.renderer = EEP.Renderer(canvas, app.game);
     app.phaseView = 'dia';
+    seenPnd = new Set();
     buildLevelBar(); buildObjective(); buildPalette(); buildIndicators(); updateGridToggle();
     onHint(''); app.renderer.draw(null); refresh();
     if (app.renderer.setNight) app.renderer.setNight(false); // comeca de dia
@@ -288,7 +338,16 @@ window.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('#gridtoggle .gr').forEach(btn => {
     btn.addEventListener('click', () => { if (app.gridType === btn.dataset.grid) return; app.gridType = btn.dataset.grid; loadLevel(app.level.id - 1); });
   });
-  el('openrank').addEventListener('click', openRank);
+  function openPause() { stopTimer(); buildLevelBar(); el('pausemodal').hidden = false; }
+  function closePause() { el('pausemodal').hidden = true; if (timeLeft > 0) startTimer(false); }
+  el('pausebtn').addEventListener('click', openPause);
+  el('pause-resume').addEventListener('click', closePause);
+  el('pause-reset').addEventListener('click', () => { el('pausemodal').hidden = true; app.game.reset(); onHint(''); app.renderer.draw(null); refresh(); startTimer(true); });
+  el('pause-rank').addEventListener('click', () => { el('pausemodal').hidden = true; openRank(); });
+  el('pausemodal').addEventListener('click', e => { if (e.target === el('pausemodal')) closePause(); });
+  el('pnd-close').addEventListener('click', closePnd);
+  el('pnd-more').addEventListener('click', closePnd);
+  el('pndmodal').addEventListener('click', e => { if (e.target === el('pndmodal')) closePnd(); });
   el('rank-close').addEventListener('click', () => { el('rankmodal').hidden = true; if (timeLeft > 0) startTimer(false); });
   el('rankmodal').addEventListener('click', e => { if (e.target === el('rankmodal')) { el('rankmodal').hidden = true; if (timeLeft > 0) startTimer(false); } });
 

@@ -74,11 +74,26 @@ h3{font-family:var(--f-display);margin:0}
 .hud-tr .phasetoggle{border:1px solid var(--line);background:rgba(255,255,255,.85);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .hud-tr .phasetoggle .ph{color:var(--muted)}
 .hud-tr .phasetoggle .ph.on{background:var(--blue);color:#fff}
+.hud-tr .timer{background:rgba(11,31,51,.74);color:#eaf3fb;border-color:rgba(255,255,255,.22);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.hud-tr .pausebtn{display:inline-flex;align-items:center;gap:5px}
+.hud-tr .pausebtn svg{width:15px;height:15px;fill:currentColor}
+#pausemodal .levelbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0 16px}
+#pausemodal .levelbar button{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.03em;padding:9px 16px;border-radius:100px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer}
+#pausemodal .levelbar button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+#pausemodal .levelbar button.locked{opacity:.45;cursor:not-allowed}
+#pausemodal .levelbar button:not(.locked):hover{border-color:var(--blue)}
+#pausemodal .modal-actions{flex-wrap:wrap}
+.pnd-media{margin:6px 0 14px;height:120px;border-radius:12px;border:1.5px dashed var(--line);background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--f-mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase}
+.pnd-bullets{text-align:left;margin:0 0 16px;padding-left:18px;color:var(--muted);font-size:.9rem;line-height:1.6}
 .hud.block{background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);border-radius:14px;
   box-shadow:0 14px 34px -16px rgba(11,31,51,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .hud h2{margin:0 0 9px}
-.hud-stats{top:16px;left:16px;width:214px;max-width:42%;padding:13px 15px}
-.hud-stats .ind{margin-bottom:9px}
+.hud-stats{top:16px;left:16px;width:242px;max-width:44%;padding:13px 15px}
+.hud-stats .ind{margin-bottom:7px}
+.hud-stats .ind-row{font-size:.8rem;margin-bottom:4px}
+.ind-name{display:inline-flex;align-items:center;gap:6px;min-width:0;overflow:hidden}
+.ind-name>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ind-ic{width:15px;height:15px;flex:0 0 auto;display:block}
 .hud-build{left:16px;right:16px;bottom:16px;padding:11px 13px}
 .hud-build .hud-head{display:flex;align-items:center;margin-bottom:9px}
 .hud-build .palette{display:flex;flex-wrap:wrap;gap:8px}

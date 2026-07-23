@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
 <header class="topbar">
@@ -17,7 +17,6 @@
     Arquiteto da Energia
     <small>protótipo de gameplay</small>
   </div>
-  <nav class="levelbar" id="levelbar" aria-label="Fases"></nav>
 </header>
 
 <div class="objbar">
@@ -31,11 +30,12 @@
 
     <div class="hud hud-tr">
       <div class="tr-line">
+        <span class="timer" id="timer" hidden>0:00</span>
         <span class="phasetoggle" id="phasetoggle" hidden>
           <button data-phase="dia" class="ph on">Dia</button>
           <button data-phase="noite" class="ph">Noite</button>
         </span>
-        <button id="openrank" class="minibtn">Ranking</button>
+        <button id="pausebtn" class="minibtn pausebtn" title="Pausar / Menu" aria-label="Menu de pausa"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.4" height="14" rx="1"/><rect x="13.6" y="5" width="3.4" height="14" rx="1"/></svg><span>Menu</span></button>
       </div>
       <div class="rotctrls" aria-label="Controles de câmera">
         <button id="zoom-in" title="Aproximar (+)" aria-label="Aproximar">+</button>
@@ -103,12 +103,41 @@
   </div>
 </div>
 
-<script src="js/hex.js?v=7"></script>
-<script src="js/level.js?v=7"></script>
-<script src="js/game.js?v=7"></script>
+<div class="modal" id="pausemodal" hidden>
+  <div class="modal-card">
+    <span class="modal-tag">Menu</span>
+    <h3>Jogo pausado</h3>
+    <p>Escolha uma fase ou continue de onde parou.</p>
+    <nav class="levelbar levelbar-modal" id="levelbar" aria-label="Fases"></nav>
+    <div class="modal-actions">
+      <button id="pause-resume" class="btn btn-primary">Continuar</button>
+      <button id="pause-reset" class="btn btn-ghost">Reiniciar fase</button>
+      <button id="pause-rank" class="btn btn-ghost">Ranking</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="pndmodal" hidden>
+  <div class="modal-card">
+    <span class="modal-tag">Projeto ENGIE</span>
+    <h3 id="pnd-title">Projeto de P&amp;D</h3>
+    <p id="pnd-lead">Este projeto foi desenvolvido pela ENGIE.</p>
+    <div class="pnd-media" id="pnd-media" aria-hidden="true">Video · animacao · modelo 3D</div>
+    <p id="pnd-desc"></p>
+    <ul class="pnd-bullets" id="pnd-bullets"></ul>
+    <div class="modal-actions">
+      <button id="pnd-more" class="btn btn-primary">Saiba mais</button>
+      <button id="pnd-close" class="btn btn-ghost">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/hex.js?v=9"></script>
+<script src="js/level.js?v=9"></script>
+<script src="js/game.js?v=9"></script>
 <script src="js/three.min.js"></script>
-<script src="js/render.js?v=7"></script>
-<script src="js/input.js?v=7"></script>
-<script src="js/main.js?v=7"></script>
+<script src="js/render.js?v=9"></script>
+<script src="js/input.js?v=9"></script>
+<script src="js/main.js?v=9"></script>
 </body>
 </html>
