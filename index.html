@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 <header class="topbar">
@@ -23,24 +23,26 @@
 <div class="objbar">
   <strong id="obj-name">Fase 1 — Ilumine a Cidade</strong>
   <span id="obj-objective">Abasteça a cidade.</span>
-  <span class="obj-right">
-    <button id="openrank" class="minibtn">Ranking</button>
-    <span class="phasetoggle" id="phasetoggle" hidden>
-      <button data-phase="dia" class="ph on">Dia</button>
-      <button data-phase="noite" class="ph">Noite</button>
-    </span>
-  </span>
 </div>
 
 <main class="app">
   <section class="stage">
     <canvas id="board" aria-label="Tabuleiro do jogo"></canvas>
 
-    <div class="rotctrls" aria-label="Controles de câmera">
-      <button id="zoom-in" title="Aproximar (+)" aria-label="Aproximar">+</button>
-      <button id="zoom-out" title="Afastar (−)" aria-label="Afastar">−</button>
-      <button id="rot-l" title="Girar para a esquerda (Q)" aria-label="Girar para a esquerda">↺</button>
-      <button id="rot-r" title="Girar para a direita (E)" aria-label="Girar para a direita">↻</button>
+    <div class="hud hud-tr">
+      <div class="tr-line">
+        <span class="phasetoggle" id="phasetoggle" hidden>
+          <button data-phase="dia" class="ph on">Dia</button>
+          <button data-phase="noite" class="ph">Noite</button>
+        </span>
+        <button id="openrank" class="minibtn">Ranking</button>
+      </div>
+      <div class="rotctrls" aria-label="Controles de câmera">
+        <button id="zoom-in" title="Aproximar (+)" aria-label="Aproximar">+</button>
+        <button id="zoom-out" title="Afastar (−)" aria-label="Afastar">−</button>
+        <button id="rot-l" title="Girar para a esquerda (Q)" aria-label="Girar para a esquerda">↺</button>
+        <button id="rot-r" title="Girar para a direita (E)" aria-label="Girar para a direita">↻</button>
+      </div>
     </div>
 
     <p class="hud-hint" id="hint">Selecione uma peça e clique numa célula. Ligue as fontes às demandas com linhas.</p>
@@ -101,12 +103,12 @@
   </div>
 </div>
 
-<script src="js/hex.js?v=4"></script>
-<script src="js/level.js?v=4"></script>
-<script src="js/game.js?v=4"></script>
+<script src="js/hex.js?v=5"></script>
+<script src="js/level.js?v=5"></script>
+<script src="js/game.js?v=5"></script>
 <script src="js/three.min.js"></script>
-<script src="js/render.js?v=4"></script>
-<script src="js/input.js?v=4"></script>
-<script src="js/main.js?v=4"></script>
+<script src="js/render.js?v=5"></script>
+<script src="js/input.js?v=5"></script>
+<script src="js/main.js?v=5"></script>
 </body>
 </html>

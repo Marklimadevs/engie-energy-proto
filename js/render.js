@@ -5,7 +5,7 @@ window.EEP.Renderer = function (canvas, game) {
   const Hex = window.EEP.Hex;
   const level = game.level;
   const grid = level.grid || window.EEP.Grid.hex;
-  let waterMat = null, grassU = null;
+  let waterMat = null, grassU = null, shoreMat = null;
 
   const HS = 1;          // hex size in world units
   const TH = 0.34;       // tile thickness
@@ -35,11 +35,11 @@ window.EEP.Renderer = function (canvas, game) {
     camera.lookAt(0, 0, 0);
   }
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x93b0c4, 0.62));
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x93b0c4, 0.62); scene.add(hemi);
   const dir = new THREE.DirectionalLight(0xffffff, 0.82);
   dir.castShadow = true; dir.shadow.mapSize.set(2048, 2048); dir.shadow.bias = -0.0006; dir.shadow.normalBias = 0.02;
   scene.add(dir); scene.add(dir.target);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.34));
+  const ambient = new THREE.AmbientLight(0xffffff, 0.34); scene.add(ambient);
 
   // ---- hex tile geometry (shared) ----
   const shape = new THREE.Shape();
@@ -142,21 +142,23 @@ window.EEP.Renderer = function (canvas, game) {
   (function () {
     const W2 = bw + 4, D2 = bd + 4;
     waterMat = new THREE.ShaderMaterial({
-      uniforms: { uTime: { value: 0 }, uA: { value: new THREE.Color(0x6fc0ea) }, uB: { value: new THREE.Color(0xa9e2f6) } },
+      uniforms: { uTime: { value: 0 }, uNight: { value: 0 }, uA: { value: new THREE.Color(0x6fc0ea) }, uB: { value: new THREE.Color(0xa9e2f6) } },
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
       fragmentShader:
-        'precision mediump float; varying vec2 vUv; uniform float uTime; uniform vec3 uA; uniform vec3 uB;' +
+        'precision mediump float; varying vec2 vUv; uniform float uTime; uniform float uNight; uniform vec3 uA; uniform vec3 uB;' +
         'void main(){ vec2 p = vUv * 48.0;' +
         'float w1 = sin(p.x*0.5 + uTime*0.7);' +
         'float w2 = sin(p.y*0.42 - uTime*0.55);' +
         'float w3 = sin((p.x*0.7 + p.y*0.6) + uTime*0.4);' +
         'float m = (w1*w2 + w3) * 0.25 + 0.5;' +
         'vec3 col = mix(uA, uB, smoothstep(0.32, 0.78, m));' +
+        'col = mix(col, col*vec3(0.26,0.38,0.62), uNight);' +
         'gl_FragColor = vec4(col,1.0); }'
     });
     const water = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 60, D2 + 60), waterMat);
     water.rotation.x = -Math.PI / 2; water.position.y = SEA_Y - 0.05; scene.add(water);
-    const shore = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 2.4, D2 + 2.4), new THREE.MeshBasicMaterial({ color: 0xc4ecf8, transparent: true, opacity: 0.9 }));
+    shoreMat = new THREE.MeshBasicMaterial({ color: 0xc4ecf8, transparent: true, opacity: 0.9 });
+    const shore = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 2.4, D2 + 2.4), shoreMat);
     shore.rotation.x = -Math.PI / 2; shore.position.y = SEA_Y + 0.02; scene.add(shore);
 
     // ---- ilha flutuante: bloco de solo em camadas (corte de terreno, cantos levemente chanfrados) ----
@@ -499,6 +501,23 @@ window.EEP.Renderer = function (canvas, game) {
   function rotate(dAz) { az += dAz; applyCamera(); render(); }
   function snap() { const s = Math.PI / 2, off = Math.PI / 4; az = Math.round((az - off) / s) * s + off; applyCamera(); render(); }
   function zoomBy(f) { camera.zoom = Math.min(3.2, Math.max(0.55, camera.zoom * f)); camera.updateProjectionMatrix(); render(); }
+  function setNight(on) {
+    if (on) {
+      hemi.color.setHex(0x5b6c8f); hemi.groundColor.setHex(0x0a1530); hemi.intensity = 0.45;
+      dir.color.setHex(0x9fb0dd); dir.intensity = 0.30;
+      ambient.color.setHex(0x2b3c62); ambient.intensity = 0.55;
+      scene.background = new THREE.Color(0x0c1c36);
+      if (shoreMat) shoreMat.color.setHex(0x2a4a78);
+    } else {
+      hemi.color.setHex(0xffffff); hemi.groundColor.setHex(0x93b0c4); hemi.intensity = 0.62;
+      dir.color.setHex(0xffffff); dir.intensity = 0.82;
+      ambient.color.setHex(0xffffff); ambient.intensity = 0.34;
+      scene.background = null;
+      if (shoreMat) shoreMat.color.setHex(0xc4ecf8);
+    }
+    if (waterMat) waterMat.uniforms.uNight.value = on ? 1 : 0;
+    render();
+  }
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
@@ -552,5 +571,5 @@ window.EEP.Renderer = function (canvas, game) {
 
   resize();
   canvas.__raf = requestAnimationFrame(loop);
-  return { draw, hitTest, resize, rotate, snap, zoom: zoomBy };
+  return { draw, hitTest, resize, rotate, snap, zoom: zoomBy, setNight };
 };

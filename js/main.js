@@ -67,19 +67,17 @@ window.addEventListener('DOMContentLoaded', function () {
     el('obj-name').textContent = 'Fase ' + app.level.id + ' — ' + app.level.name;
     el('obj-name').title = app.level.teaches || '';
     el('obj-objective').textContent = app.level.objective || app.level.teaches || '';
-    const multi = (app.level.phases || []).indexOf('noite') >= 0;
-    const pt = el('phasetoggle'); pt.hidden = !multi;
-    if (multi) {
-      app.phaseView = 'dia';
-      pt.querySelectorAll('.ph').forEach(btn => {
-        btn.className = 'ph' + (btn.dataset.phase === app.phaseView ? ' on' : '');
-        btn.onclick = () => {
-          app.phaseView = btn.dataset.phase;
-          pt.querySelectorAll('.ph').forEach(x => x.className = 'ph' + (x.dataset.phase === app.phaseView ? ' on' : ''));
-          refresh();
-        };
-      });
-    }
+    const pt = el('phasetoggle'); pt.hidden = false; // dia/noite visual em todas as fases
+    app.phaseView = 'dia';
+    pt.querySelectorAll('.ph').forEach(btn => {
+      btn.className = 'ph' + (btn.dataset.phase === app.phaseView ? ' on' : '');
+      btn.onclick = () => {
+        app.phaseView = btn.dataset.phase;
+        pt.querySelectorAll('.ph').forEach(x => x.className = 'ph' + (x.dataset.phase === app.phaseView ? ' on' : ''));
+        if (app.renderer && app.renderer.setNight) app.renderer.setNight(app.phaseView === 'noite');
+        refresh();
+      };
+    });
   }
 
   function buildPalette() {
@@ -255,6 +253,7 @@ window.addEventListener('DOMContentLoaded', function () {
     app.phaseView = 'dia';
     buildLevelBar(); buildObjective(); buildPalette(); buildIndicators(); updateGridToggle();
     onHint(''); app.renderer.draw(null); refresh();
+    if (app.renderer.setNight) app.renderer.setNight(false); // comeca de dia
     startTimer(true);
     if (wantDemo) seedDemo();
     if (wantRot) app.renderer.rotate(wantRot * Math.PI / 180);
