@@ -5,7 +5,7 @@ window.addEventListener('DOMContentLoaded', function () {
   const el = id => document.getElementById(id);
   const canvas = el('board');
 
-  const app = { game: null, renderer: null, level: null, phaseView: 'dia', player: 'Visitante', gridType: 'hex' };
+  const app = { game: null, renderer: null, level: null, phaseView: 'dia', player: 'Visitante', gridType: 'square' };
   const progress = { unlocked: 99 };
   let timeLeft = 0, timerId = null, eventFired = false, wantDemo = false, wantRot = 0;
 

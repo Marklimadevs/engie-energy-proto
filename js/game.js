@@ -29,7 +29,7 @@ window.EEP.Game = function (level) {
     return grid.neighbors(c.q, c.r).some(n => { const nc = cell(Hex.key(n.q, n.r)); return nc && nc.terrain === 'water'; });
   }
 
-  function isBuildableLand(c) { return c.terrain === 'land' || c.terrain === 'hill'; }
+  function isBuildableLand(c) { return c.terrain === 'land' || c.terrain === 'hill' || c.terrain === 'field' || c.terrain === 'dirt'; }
 
   function apply(k) {
     const c = cell(k); if (!c) return '';

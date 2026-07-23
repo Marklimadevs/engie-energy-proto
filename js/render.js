@@ -5,7 +5,7 @@ window.EEP.Renderer = function (canvas, game) {
   const Hex = window.EEP.Hex;
   const level = game.level;
   const grid = level.grid || window.EEP.Grid.hex;
-  let waterMat = null;
+  let waterMat = null, grassU = null;
 
   const HS = 1;          // hex size in world units
   const TH = 0.34;       // tile thickness
@@ -57,17 +57,37 @@ window.EEP.Renderer = function (canvas, game) {
 
   function terrainColor(cell) {
     if (cell.terrain === 'water') return COL.water;
-    if (cell.terrain === 'hill') return COL.hill;
+    if (cell.terrain === 'hill') return 0x6f9a3f;
+    if (cell.terrain === 'dirt') return 0xBE9060;
+    if (cell.terrain === 'field') return 0xE2CE64;
+    if (cell.terrain === 'sand') return 0xE9DCA6;
     if (cell.terrain === 'node') return COL.node;
-    // land: tint by irradiance (sunnier = a touch warmer)
     const a = new THREE.Color(0x74AC48), b = new THREE.Color(0xA6C766);
     return a.lerp(b, cell.irr * 0.5).getHex();
   }
   function topY(cell) {
     if (cell.terrain === 'hill') return 0.32;
-    if (cell.terrain === 'water') return -0.14;
+    if (cell.terrain === 'water') return -0.16;
     return 0;
   }
+
+  // ---- animated grass + water-tile materials (patch built-in Lambert to keep shadows) ----
+  grassU = { value: 0 };
+  const grassMat = new THREE.MeshLambertMaterial({ color: 0x82be52 });
+  grassMat.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = grassU;
+    sh.vertexShader = 'varying vec2 vGXZ;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vGXZ = (modelMatrix * vec4(position,1.0)).xz;');
+    sh.fragmentShader = 'varying vec2 vGXZ;\nuniform float uTime;\n' + sh.fragmentShader.replace('#include <color_fragment>',
+      '#include <color_fragment>\n { float n = sin(vGXZ.x*2.3)*sin(vGXZ.y*2.1); float wind = sin((vGXZ.x+vGXZ.y)*1.1 + uTime*1.6);' +
+      ' diffuseColor.rgb *= (1.0 + n*0.06 + wind*0.05); diffuseColor.g *= (1.0 + max(0.0,n)*0.05); }');
+  };
+  const waterTileMat = new THREE.MeshLambertMaterial({ color: 0x4f9be0, transparent: true, opacity: 0.96 });
+  waterTileMat.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = grassU;
+    sh.vertexShader = 'varying vec2 vWXZ;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vWXZ = (modelMatrix * vec4(position,1.0)).xz;');
+    sh.fragmentShader = 'varying vec2 vWXZ;\nuniform float uTime;\n' + sh.fragmentShader.replace('#include <color_fragment>',
+      '#include <color_fragment>\n { float s = sin(vWXZ.x*3.0 + uTime*2.0)*sin(vWXZ.y*2.6 - uTime*1.6); diffuseColor.rgb *= (1.0 + s*0.10); }');
+  };
 
   // ---- board ----
   const boardGroup = new THREE.Group(); scene.add(boardGroup);
@@ -89,9 +109,11 @@ window.EEP.Renderer = function (canvas, game) {
   })();
   for (const [k, c] of level.cells) {
     c._x = c._wx - ccx; c._z = c._wz - ccz; c._y = topY(c);
-    const mat = new THREE.MeshLambertMaterial({ color: terrainColor(c) });
-    if (c.terrain === 'water') { mat.transparent = true; mat.opacity = 0.92; }
-    const m = new THREE.Mesh(tileGeo, mat);
+    let tm;
+    if (c.terrain === 'land') tm = grassMat;
+    else if (c.terrain === 'water') tm = waterTileMat;
+    else tm = new THREE.MeshLambertMaterial({ color: terrainColor(c) });
+    const m = new THREE.Mesh(tileGeo, tm);
     m.position.set(c._x, c._y, c._z);
     m.userData.key = k; m.receiveShadow = true; m.castShadow = false;
     boardGroup.add(m); tileMeshes.push(m);
@@ -404,6 +426,7 @@ window.EEP.Renderer = function (canvas, game) {
 
   function updateAnimations(t) {
     if (waterMat) waterMat.uniforms.uTime.value = t;
+    if (grassU) grassU.value = t;
     scene.traverse(o => {
       if (o.userData.spin) o.rotation.z = t * o.userData.spin;
       else if (o.userData.smoke) {

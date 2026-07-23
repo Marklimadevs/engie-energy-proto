@@ -75,6 +75,9 @@ window.EEP = window.EEP || {};
   function buildMap(W, H, opts, grid) {
     const water = new Set(opts.water || []);
     const hills = new Set(opts.hills || []);
+    const dirt = new Set(opts.dirt || []);
+    const field = new Set(opts.field || []);
+    const sand = new Set(opts.sand || []);
     const nodeByCO = new Map((opts.nodes || []).map(n => [n.col + ',' + n.row, n]));
     const cells = new Map();
     const nodes = [];
@@ -85,8 +88,11 @@ window.EEP = window.EEP || {};
         const k = Hex.key(q, r);
         const co = col + ',' + row;
         let terrain = 'land';
-        if (water.has(co)) terrain = 'water';
+        if (field.has(co)) terrain = 'field';
+        if (dirt.has(co)) terrain = 'dirt';
+        if (sand.has(co)) terrain = 'sand';
         if (hills.has(co)) terrain = 'hill';
+        if (water.has(co)) terrain = 'water';
         let nodeType = null, demand = 0;
         if (nodeByCO.has(co)) { const n = nodeByCO.get(co); terrain = 'node'; nodeType = n.type; demand = n.demand; }
 
@@ -108,7 +114,10 @@ window.EEP = window.EEP || {};
     const grid = window.EEP.Grid[gridType] || window.EEP.Grid.hex;
     const W = 10, H = 9;
     const m = buildMap(W, H, {
-      water: ['3,2', '4,3', '4,4', '5,5', '5,6', '6,7'],
+      field: ['0,1', '1,1', '2,1', '0,2', '1,2', '2,2', '0,3', '1,3'],
+      dirt: ['4,0', '5,0', '4,1', '5,1', '6,1', '4,2', '5,2', '8,2', '9,2', '9,3', '8,3'],
+      hills: ['9,0', '8,0', '8,1', '9,1'],
+      water: ['4,4', '5,4', '6,4', '4,5', '5,5', '6,5'],
       nodes: [{ col: 8, row: 6, type: 'cidade', demand: 120 }]
     }, grid);
     return {
@@ -137,14 +146,14 @@ window.EEP = window.EEP || {};
         { type: 'house', col: 2.0, row: 6.0 },
         { type: 'cow', col: 3.0, row: 6.4 }, { type: 'cow', col: 3.5, row: 6.8 }, { type: 'cow', col: 2.8, row: 7.1 }, { type: 'cow', col: 3.7, row: 6.2 },
         { type: 'hay', col: 2.5, row: 6.6 }, { type: 'hay', col: 2.8, row: 6.6 },
-        { type: 'treatment', col: 6.3, row: 6.4 },
-        { type: 'rock', col: 5.6, row: 4.6 }, { type: 'rock', col: 6.2, row: 3.4 },
+        { type: 'treatment', col: 6.9, row: 4.4 },
+        { type: 'rock', col: 3.3, row: 5.8 }, { type: 'rock', col: 6.2, row: 3.4 },
         { type: 'forest', col: 0.8, row: 6.2, n: 6 }, { type: 'forest', col: 1.5, row: 7.3, n: 5 },
         { type: 'forest', col: 8.7, row: 5.4, n: 6 }, { type: 'forest', col: 6.4, row: 8.0, n: 5 },
         { type: 'tree', col: 0.5, row: 3.4 }, { type: 'tree', col: 0.7, row: 5.4 }, { type: 'tree', col: 1.3, row: 4.7 },
         { type: 'tree', col: 4.3, row: 7.7 }, { type: 'tree', col: 5.1, row: 8.0 }, { type: 'tree', col: 3.6, row: 8.1 },
         { type: 'tree', col: 7.8, row: 6.2 }, { type: 'tree', col: 2.6, row: 1.0 }, { type: 'tree', col: 3.3, row: 0.7 },
-        { type: 'rock', col: 2.2, row: 8.0 }, { type: 'rock', col: 8.4, row: 4.0 }, { type: 'rock', col: 4.7, row: 5.6 },
+        { type: 'rock', col: 2.2, row: 8.0 }, { type: 'rock', col: 8.4, row: 4.0 }, { type: 'rock', col: 7.4, row: 4.7 },
         { type: 'road', col: 4.0, row: 2.6, len: 7, rot: 0 },
         { type: 'road', col: 3.0, row: 4.4, len: 5, rot: Math.PI / 2 },
         { type: 'boat', wx: -10, wz: 5.2, y: -0.42, rot: 0.5, s: 1.1 }
