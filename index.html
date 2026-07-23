@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
 <header class="topbar">
@@ -36,7 +36,9 @@
   <section class="stage">
     <canvas id="board" aria-label="Tabuleiro do jogo"></canvas>
 
-    <div class="rotctrls" aria-label="Girar a visão">
+    <div class="rotctrls" aria-label="Controles de câmera">
+      <button id="zoom-in" title="Aproximar (+)" aria-label="Aproximar">+</button>
+      <button id="zoom-out" title="Afastar (−)" aria-label="Afastar">−</button>
       <button id="rot-l" title="Girar para a esquerda (Q)" aria-label="Girar para a esquerda">↺</button>
       <button id="rot-r" title="Girar para a direita (E)" aria-label="Girar para a direita">↻</button>
     </div>
@@ -99,12 +101,12 @@
   </div>
 </div>
 
-<script src="js/hex.js?v=3"></script>
-<script src="js/level.js?v=3"></script>
-<script src="js/game.js?v=3"></script>
+<script src="js/hex.js?v=4"></script>
+<script src="js/level.js?v=4"></script>
+<script src="js/game.js?v=4"></script>
 <script src="js/three.min.js"></script>
-<script src="js/render.js?v=3"></script>
-<script src="js/input.js?v=3"></script>
-<script src="js/main.js?v=3"></script>
+<script src="js/render.js?v=4"></script>
+<script src="js/input.js?v=4"></script>
+<script src="js/main.js?v=4"></script>
 </body>
 </html>

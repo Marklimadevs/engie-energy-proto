@@ -498,6 +498,7 @@ window.EEP.Renderer = function (canvas, game) {
   function render() { syncDynamic(); gl.render(scene, camera); }
   function rotate(dAz) { az += dAz; applyCamera(); render(); }
   function snap() { const s = Math.PI / 2, off = Math.PI / 4; az = Math.round((az - off) / s) * s + off; applyCamera(); render(); }
+  function zoomBy(f) { camera.zoom = Math.min(3.2, Math.max(0.55, camera.zoom * f)); camera.updateProjectionMatrix(); render(); }
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
@@ -512,9 +513,10 @@ window.EEP.Renderer = function (canvas, game) {
 
   function draw(hoverKey) { updateHover(hoverKey); render(); }
 
-  // single resize binding shared across level reloads
-  canvas.__eep = { onResize: resize };
+  // single resize/zoom binding shared across level reloads
+  canvas.__eep = { onResize: resize, onZoom: zoomBy };
   if (!canvas.__resizeBound) { window.addEventListener('resize', () => { if (canvas.__eep) canvas.__eep.onResize(); }); canvas.__resizeBound = true; }
+  if (!canvas.__wheelBound) { canvas.addEventListener('wheel', (e) => { if (!canvas.__eep) return; e.preventDefault(); canvas.__eep.onZoom(e.deltaY < 0 ? 1.12 : 1 / 1.12); }, { passive: false }); canvas.__wheelBound = true; }
 
   function updateAnimations(t) {
     if (waterMat) waterMat.uniforms.uTime.value = t;
@@ -550,5 +552,5 @@ window.EEP.Renderer = function (canvas, game) {
 
   resize();
   canvas.__raf = requestAnimationFrame(loop);
-  return { draw, hitTest, resize, rotate, snap };
+  return { draw, hitTest, resize, rotate, snap, zoom: zoomBy };
 };
