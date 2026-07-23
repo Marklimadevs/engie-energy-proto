@@ -5,6 +5,7 @@ window.EEP.Renderer = function (canvas, game) {
   const Hex = window.EEP.Hex;
   const level = game.level;
   const grid = level.grid || window.EEP.Grid.hex;
+  let waterMat = null;
 
   const HS = 1;          // hex size in world units
   const TH = 0.34;       // tile thickness
@@ -111,7 +112,20 @@ window.EEP.Renderer = function (canvas, game) {
   // ---- surrounding water + floating island base ----
   (function () {
     const W2 = bw + 4, D2 = bd + 4;
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 44, D2 + 44), new THREE.MeshBasicMaterial({ color: 0x8ccfee }));
+    waterMat = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uA: { value: new THREE.Color(0x6fc0ea) }, uB: { value: new THREE.Color(0xa9e2f6) } },
+      vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+      fragmentShader:
+        'precision mediump float; varying vec2 vUv; uniform float uTime; uniform vec3 uA; uniform vec3 uB;' +
+        'void main(){ vec2 p = vUv * 48.0;' +
+        'float w1 = sin(p.x*0.5 + uTime*0.7);' +
+        'float w2 = sin(p.y*0.42 - uTime*0.55);' +
+        'float w3 = sin((p.x*0.7 + p.y*0.6) + uTime*0.4);' +
+        'float m = (w1*w2 + w3) * 0.25 + 0.5;' +
+        'vec3 col = mix(uA, uB, smoothstep(0.32, 0.78, m));' +
+        'gl_FragColor = vec4(col,1.0); }'
+    });
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 44, D2 + 44), waterMat);
     water.rotation.x = -Math.PI / 2; water.position.y = -0.58; scene.add(water);
     const shore = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 2.6, D2 + 2.6), new THREE.MeshBasicMaterial({ color: 0xb2e2f6 }));
     shore.rotation.x = -Math.PI / 2; shore.position.y = -0.5; scene.add(shore);
@@ -201,6 +215,15 @@ window.EEP.Renderer = function (canvas, game) {
   function cyl(rt, rb, h, color, gh, seg) { return M(new THREE.CylinderGeometry(rt, rb, h, seg || 12), color, gh); }
   function cone(r, h, color, gh, seg) { return M(new THREE.ConeGeometry(r, h, seg || 8), color, gh); }
   function sph(r, color, gh) { return M(new THREE.SphereGeometry(r, 10, 8), color, gh); }
+  function makeSmoke(n, spread, size, color) {
+    const s = new THREE.Group(); s.userData.smoke = { range: 1.7, spread: spread };
+    for (let i = 0; i < n; i++) {
+      const p = new THREE.Mesh(new THREE.SphereGeometry(size, 7, 6), new THREE.MeshLambertMaterial({ color: color, transparent: true, opacity: 0.85 }));
+      p.userData = { speed: 0.3 + i * 0.04, phase: i * (1.7 / n) };
+      s.add(p);
+    }
+    return s;
+  }
 
   function buildPiece(type, gh) {
     const g = new THREE.Group();
@@ -210,8 +233,11 @@ window.EEP.Renderer = function (canvas, game) {
       const panel = box(0.75, 0.05, 0.5, C.solar, gh); panel.position.y = 0.32; panel.rotation.x = -0.5; g.add(panel);
     } else if (type === 'wind') {
       const pole = cyl(0.04, 0.05, 0.85, C.wind, gh); pole.position.y = 0.42; g.add(pole);
-      const hub = sph(0.07, 0x333333, gh); hub.position.set(0, 0.85, 0.06); g.add(hub);
-      for (let i = 0; i < 3; i++) { const bl = box(0.06, 0.5, 0.02, C.wind, gh); bl.position.set(0, 0.85, 0.06); bl.geometry.translate(0, 0.25, 0); bl.rotation.z = i * 2 * Math.PI / 3; g.add(bl); }
+      const rotor = new THREE.Group(); rotor.position.set(0, 0.85, 0.08);
+      const hub = sph(0.07, 0x333333, gh); rotor.add(hub);
+      for (let i = 0; i < 3; i++) { const bl = box(0.055, 0.5, 0.02, C.wind, gh); bl.geometry.translate(0, 0.25, 0); bl.rotation.z = i * 2 * Math.PI / 3; rotor.add(bl); }
+      if (!gh) rotor.userData.spin = 2.4;
+      g.add(rotor);
     } else if (type === 'hydro') {
       const dam = box(0.85, 0.4, 0.32, C.hydro, gh); dam.position.y = 0.2; g.add(dam);
       const water = box(0.85, 0.04, 0.3, 0x7fc0ee, gh); water.position.set(0, 0.06, 0.28); g.add(water);
@@ -266,13 +292,13 @@ window.EEP.Renderer = function (canvas, game) {
       const mt = new THREE.Mesh(new THREE.ConeGeometry(1.7, 2.3, 7), mat(0x7a5a3c)); mt.position.y = 1.15; g.add(mt);
       const crater = cyl(0.5, 0.7, 0.25, 0x3a2a20); crater.position.y = 2.25; g.add(crater);
       const lava = cyl(0.42, 0.5, 0.2, 0xff7a1a); lava.position.y = 2.32; g.add(lava);
-      for (let i = 0; i < 3; i++) { const s = sph(0.35 + i * 0.12, 0xe6e9ec); s.position.set((i - 1) * 0.2, 2.8 + i * 0.5, 0); g.add(s); }
+      const sm = makeSmoke(5, 0.28, 0.3, 0xe6e9ec); sm.position.y = 2.45; g.add(sm);
       // lava streak
       const st = box(0.16, 0.05, 1.1, 0xff8a2a); st.position.set(0.2, 1.2, 0.55); st.rotation.x = 0.7; g.add(st);
     } else if (type === 'cooling') {
       const lower = cyl(0.34, 0.5, 0.7, 0xcfd3d6); lower.position.y = 0.35; g.add(lower);
       const upper = cyl(0.44, 0.34, 0.35, 0xcfd3d6); upper.position.y = 0.87; g.add(upper);
-      const steam = sph(0.3, 0xeef2f4); steam.position.y = 1.2; g.add(steam);
+      const sm = makeSmoke(4, 0.14, 0.17, 0xeef2f4); sm.position.y = 1.0; g.add(sm);
     } else if (type === 'silo') {
       const body = cyl(0.22, 0.22, 0.9, 0xd7dbdf); body.position.y = 0.45; g.add(body);
       const dome = sph(0.22, 0xc2c7cc); dome.scale.y = 0.5; dome.position.y = 0.9; g.add(dome);
@@ -306,6 +332,12 @@ window.EEP.Renderer = function (canvas, game) {
       const c2 = box(0.4, 0.16, 0.14, 0xd9a233); c2.position.set(0.12, 0.4, -0.1); g.add(c2);
     } else if (type === 'road') {
       const r = box(it.len || 1, 0.05, 0.34, 0x3a3f45); r.position.y = 0.03; g.add(r);
+    } else if (type === 'windturbine') {
+      const pole = cyl(0.05, 0.07, 1.3, 0xededed); pole.position.y = 0.65; g.add(pole);
+      const rotor = new THREE.Group(); rotor.position.set(0, 1.3, 0.1);
+      const hub = sph(0.09, 0x333333); rotor.add(hub);
+      for (let i = 0; i < 3; i++) { const bl = box(0.07, 0.7, 0.025, 0xf4f4f4); bl.geometry.translate(0, 0.35, 0); bl.rotation.z = i * 2 * Math.PI / 3; rotor.add(bl); }
+      rotor.userData.spin = 1.8; g.add(rotor);
     } else if (type === 'rock') {
       const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18), mat(0x9aa0a6)); r.position.y = 0.12; g.add(r);
     }
@@ -370,6 +402,27 @@ window.EEP.Renderer = function (canvas, game) {
   canvas.__eep = { onResize: resize };
   if (!canvas.__resizeBound) { window.addEventListener('resize', () => { if (canvas.__eep) canvas.__eep.onResize(); }); canvas.__resizeBound = true; }
 
+  function updateAnimations(t) {
+    if (waterMat) waterMat.uniforms.uTime.value = t;
+    scene.traverse(o => {
+      if (o.userData.spin) o.rotation.z = t * o.userData.spin;
+      else if (o.userData.smoke) {
+        const rng = o.userData.smoke.range, spr = o.userData.smoke.spread;
+        for (const c of o.children) {
+          const y = (t * c.userData.speed + c.userData.phase) % rng, f = y / rng;
+          c.position.y = y;
+          c.position.x = Math.sin((y + c.userData.phase) * 3.0) * spr * 0.5;
+          c.material.opacity = Math.max(0, 0.85 * (1 - f));
+          c.scale.setScalar(0.5 + f * 1.1);
+        }
+      }
+    });
+  }
+
+  if (canvas.__raf) cancelAnimationFrame(canvas.__raf);
+  function loop(ts) { updateAnimations((ts || 0) * 0.001); gl.render(scene, camera); canvas.__raf = requestAnimationFrame(loop); }
+
   resize();
+  canvas.__raf = requestAnimationFrame(loop);
   return { draw, hitTest, resize, rotate, snap };
 };

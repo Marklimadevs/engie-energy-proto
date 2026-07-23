@@ -127,6 +127,7 @@ window.EEP = window.EEP || {};
         { type: 'cooling', col: 5.2, row: 1.6 }, { type: 'cooling', col: 6.0, row: 1.2 },
         { type: 'plant', col: 4.2, row: 2.1 },
         { type: 'volcano', col: 8.2, row: 1.4, s: 0.95 },
+        { type: 'windturbine', col: 7.2, row: 0.7, s: 1.0 },
         { type: 'forest', col: 7.4, row: 3.0, n: 7 }, { type: 'forest', col: 8.3, row: 3.6, n: 6 },
         { type: 'forest', col: 7.0, row: 4.6, n: 6 }, { type: 'tree', col: 6.6, row: 2.4 },
         { type: 'silo', col: 0.6, row: 1.8 }, { type: 'silo', col: 1.1, row: 1.7 },
