@@ -189,6 +189,9 @@ window.EEP = window.EEP || {};
     const m = buildMap(W, H, {
       water: ['4,3', '4,4', '5,5', '5,6', '6,7'],
       hills: ['0,0', '1,0', '0,1', '1,1', '2,0'],
+      field: ['0,5', '1,5', '2,5', '1,6', '2,6', '3,6', '0,7', '1,7', '2,7', '3,7', '1,8', '2,8'],
+      dirt: ['8,6', '8,7', '9,7', '10,7', '8,8', '9,8', '10,8', '10,6', '7,7', '7,8', '3,5'],
+      sand: ['3,2', '3,3', '4,2', '3,4', '5,4', '4,5', '6,5', '4,6', '6,6', '5,7', '6,8', '7,6'],
       nodes: [{ col: 9, row: 6, type: 'cidade', demand: 150 }]
     }, grid);
     return {
@@ -201,7 +204,34 @@ window.EEP = window.EEP || {};
       indicators: ['energia', 'custo', 'sust', 'estab', 'inov'],
       targets: { sust: 45, estab: 45 },
       objective: 'Acenda a cidade de dia e de noite — 150 MW.',
-      time: 150, event: { at: 60, type: 'drought', label: 'Seca: hidreletricas a -40%' }
+      time: 150, event: { at: 60, type: 'drought', label: 'Seca: hidreletricas a -40%' },
+      decor: [
+        // parque eolico (colinas NO)
+        { type: 'windturbine', col: 0.6, row: 0.6 }, { type: 'windturbine', col: 2, row: 0.5 }, { type: 'windturbine', col: 0.7, row: 2.1 },
+        { type: 'windturbine', col: 2.2, row: 1.9 }, { type: 'windturbine', col: 1.4, row: 1.3, s: 0.9 },
+        { type: 'transformer', col: 1, row: 2.9 }, { type: 'rock', col: 2.7, row: 0.3, s: 0.8 }, { type: 'bush', col: 1.2, row: 2.6 },
+        // rio: tratamento + botes + pier
+        { type: 'treatment', col: 3.6, row: 4.1 }, { type: 'tank', col: 3, row: 4.7, s: 0.9 }, { type: 'pipe', col: 3.3, row: 4.4, len: 1.6, rot: 0.9 },
+        { type: 'rowboat', col: 4.1, row: 3.6, y: -0.05, rot: -0.3 }, { type: 'rowboat', col: 5, row: 5.4, y: -0.05, rot: 0.6 },
+        { type: 'pier', col: 5.4, row: 7, rot: 0, y: -0.03 }, { type: 'crate', col: 6.7, row: 5.4, s: 0.9 }, { type: 'deadtree', col: 6.2, row: 6.6 },
+        { type: 'boat', wx: -10, wz: 5.2, y: -0.42, rot: 0.5, s: 1.1 },
+        // vila junto a cidade (estradas + iluminacao)
+        { type: 'road', col: 8, row: 7.5, len: 4, rot: 0 }, { type: 'road', col: 10.05, row: 6, len: 2.8, rot: 1.5708 },
+        { type: 'house', col: 8.4, row: 7, rot: -0.2 }, { type: 'house', col: 7.6, row: 7.1, rot: 0.15 }, { type: 'house', col: 9.6, row: 6.9, rot: 0.1 },
+        { type: 'house', col: 9.5, row: 4.9, rot: -0.15 }, { type: 'house', col: 10.4, row: 5.4, rot: 0.1 },
+        { type: 'lamp', col: 6.8, row: 7.15 }, { type: 'lamp', col: 8.2, row: 7.15 }, { type: 'lamp', col: 9.6, row: 7.15 },
+        { type: 'lamp', col: 9.65, row: 5 }, { type: 'lamp', col: 9.65, row: 6.9 }, { type: 'trafficlight', col: 9.8, row: 7.2 },
+        { type: 'transformer', col: 10.4, row: 6.9 }, { type: 'bush', col: 8.3, row: 6.7 }, { type: 'crate', col: 7.9, row: 7 },
+        // fazenda (SO) com toque de seca
+        { type: 'barn', col: 1.6, row: 6.3, rot: 0.3 }, { type: 'silo', col: 2.5, row: 5.7 }, { type: 'hay', col: 3.3, row: 6.5 }, { type: 'hay', col: 1, row: 7.2 },
+        { type: 'cow', col: 2.9, row: 7.1, rot: 0.4 }, { type: 'cow', col: 3.5, row: 7.4, rot: -0.3 }, { type: 'tractor', col: 1.7, row: 7.3, rot: 0.5 },
+        { type: 'fence', col: 2.3, row: 5.4, len: 3, n: 6, rot: 0 },
+        { type: 'deadtree', col: 4.2, row: 6.9 }, { type: 'deadtree', col: 3.9, row: 5.2 }, { type: 'log', col: 4.6, row: 7.4 },
+        // florestas e detalhes de borda
+        { type: 'forest', col: 0.5, row: 8.4, n: 6 }, { type: 'forest', col: 10.4, row: 2, n: 6 }, { type: 'forest', col: 6, row: 0.4, n: 5 }, { type: 'forest', col: 9.6, row: 0.6, n: 5 },
+        { type: 'tree', col: 3.6, row: 0.5 }, { type: 'tree', col: 7.6, row: 0.6 }, { type: 'tree', col: 10.5, row: 4.6 }, { type: 'tree', col: 0.4, row: 4.6 },
+        { type: 'rock', col: 0.3, row: 3.2 }, { type: 'rock', col: 7.2, row: 8.4 }, { type: 'bush', col: 6.6, row: 1.4 }, { type: 'bush', col: 8.2, row: 2.2 }
+      ]
     };
   }
 
@@ -211,6 +241,9 @@ window.EEP = window.EEP || {};
     const m = buildMap(W, H, {
       water: ['4,3', '4,4', '5,5', '5,6', '6,7'],
       hills: ['0,0', '1,0', '0,1', '1,1', '2,1'],
+      field: ['0,4', '1,4', '2,4', '3,4', '0,5', '1,5', '2,5', '3,5', '1,6', '2,6', '3,6', '1,7', '2,7', '1,8', '2,8'],
+      dirt: ['7,7', '8,7', '9,7', '10,7', '11,7', '7,8', '8,8', '10,8', '11,8', '7,9', '8,9', '9,9', '10,9', '11,9'],
+      sand: ['3,3', '4,2', '5,3', '3,4', '5,4', '4,5', '6,5', '5,7', '6,6', '6,8'],
       nodes: [
         { col: 9, row: 3, type: 'cidade', demand: 130 },
         { col: 9, row: 8, type: 'industria', demand: 150 }
@@ -226,7 +259,36 @@ window.EEP = window.EEP || {};
       indicators: ['energia', 'custo', 'sust', 'estab', 'emis', 'lucro', 'inov'],
       targets: { sust: 50, estab: 50, emis: 45, lucro: 45 },
       objective: 'Abasteca cidade e industria — 280 MW.',
-      time: 180, event: { at: 80, type: 'spike', label: 'Pico de consumo: demanda +20%' }
+      time: 180, event: { at: 80, type: 'spike', label: 'Pico de consumo: demanda +20%' },
+      decor: [
+        // colinas NO (eolica)
+        { type: 'windturbine', col: 0.8, row: 0.6, s: 1 }, { type: 'windturbine', col: 2.2, row: 0.9, s: 0.95 }, { type: 'windturbine', col: 1.6, row: 1.9, s: 0.9 }, { type: 'rock', col: 1.4, row: 2.4, s: 0.9 },
+        // rio (pier, bote, tratamento)
+        { type: 'pier', col: 3.4, row: 4, rot: 0, y: -0.03 }, { type: 'rowboat', col: 5.1, row: 5.5, rot: 0.6, y: -0.05 }, { type: 'treatment', col: 5.5, row: 6.5, rot: -0.4 },
+        { type: 'boat', wx: -10, wz: 5.2, y: -0.42, rot: 0.5, s: 1.1 }, { type: 'rock', col: 6.9, row: 5.7, s: 0.8 },
+        // fazenda rural (O)
+        { type: 'barn', col: 1.6, row: 5.4, rot: 0.2 }, { type: 'silo', col: 2.4, row: 4.8, s: 0.95 }, { type: 'silo', col: 2.75, row: 5.15, s: 0.85 }, { type: 'tractor', col: 1, row: 4.5, rot: 0.6, s: 0.9 },
+        { type: 'hay', col: 2.2, row: 6.6, s: 0.9 }, { type: 'hay', col: 1.4, row: 7.4, rot: 0.5, s: 0.85 },
+        { type: 'cow', col: 0.8, row: 6.4, rot: 2.4 }, { type: 'cow', col: 1.5, row: 6.9, rot: 1.2 }, { type: 'cow', col: 2.6, row: 6.3, rot: -1 },
+        { type: 'fence', col: 0.4, row: 4.4, rot: 0, len: 2.6, n: 5 }, { type: 'fence', col: 0.4, row: 7.6, rot: 0, len: 3, n: 6 }, { type: 'fence', col: 3.3, row: 5.6, rot: 1.57, len: 2.4, n: 5 },
+        // cidade (NE, perto do no cidade)
+        { type: 'house', col: 7.6, row: 1.8, rot: 0.3 }, { type: 'house', col: 8.4, row: 1.4, rot: -0.2, s: 0.95 }, { type: 'house', col: 10.4, row: 1.9, rot: 0.5 },
+        { type: 'house', col: 10.8, row: 3.3, rot: -0.3, s: 0.95 }, { type: 'house', col: 10.5, row: 4.4, rot: 0.2 }, { type: 'house', col: 7.9, row: 4.5, rot: 0.7, s: 0.9 },
+        { type: 'bush', col: 8.3, row: 2.5, s: 0.9 }, { type: 'tree', col: 10.2, row: 2.6 },
+        // industria (SE, perto do no industria)
+        { type: 'plant', col: 10.6, row: 8.6, rot: -0.2 }, { type: 'cooling', col: 7.6, row: 8.4 }, { type: 'cooling', col: 7.95, row: 9.15, s: 0.9 }, { type: 'cooling', col: 10.8, row: 7.5, s: 0.95 }, { type: 'cooling', col: 10.4, row: 9.3, s: 0.9 },
+        { type: 'tank', col: 7.5, row: 9.4, s: 0.9 }, { type: 'tank', col: 11.1, row: 8.2, s: 0.85 }, { type: 'transformer', col: 8, row: 6.9, rot: 0.2 }, { type: 'transformer', col: 10.1, row: 6.7, rot: -0.3 },
+        { type: 'pipe', col: 9.2, row: 9.3, rot: 0, len: 2.2 }, { type: 'pipe', col: 10.9, row: 7, rot: 1.5, len: 1.4 }, { type: 'silo', col: 8.6, row: 8.7, s: 0.9 }, { type: 'crate', col: 8.3, row: 9.1 },
+        // estradas conectando as 3 zonas + iluminacao
+        { type: 'road', col: 5.25, row: 2, len: 5.5, rot: 0 }, { type: 'road', col: 7.6, row: 5, len: 6, rot: 1.5708 }, { type: 'road', col: 2.5, row: 3.75, len: 3.5, rot: 1.5708 },
+        { type: 'road', col: 7.95, row: 3, len: 0.8, rot: 0 }, { type: 'road', col: 7.95, row: 8, len: 0.8, rot: 0 },
+        { type: 'lamp', col: 3.5, row: 1.6 }, { type: 'lamp', col: 5, row: 2.4 }, { type: 'lamp', col: 6.5, row: 1.6 }, { type: 'lamp', col: 8, row: 3.5 }, { type: 'lamp', col: 7.2, row: 5 }, { type: 'lamp', col: 8, row: 6.5 },
+        { type: 'lamp', col: 7.2, row: 7.4 }, { type: 'lamp', col: 2.1, row: 3 }, { type: 'lamp', col: 2.9, row: 4.6 }, { type: 'lamp', col: 8.3, row: 2.7 }, { type: 'lamp', col: 7.4, row: 8.3 },
+        { type: 'trafficlight', col: 7.85, row: 2.25 }, { type: 'trafficlight', col: 2.75, row: 2.2 }, { type: 'trafficlight', col: 7.85, row: 7.6 },
+        // florestas e borda
+        { type: 'forest', col: 0.5, row: 9.2, n: 6 }, { type: 'forest', col: 11.3, row: 0.6, n: 5 }, { type: 'forest', col: 4, row: 0.5, n: 6 }, { type: 'forest', col: 11.4, row: 5.2, n: 5 },
+        { type: 'tree', col: 0.3, row: 3.2 }, { type: 'tree', col: 11.6, row: 9.4 }, { type: 'bush', col: 6.6, row: 0.8, s: 0.9 }, { type: 'bush', col: 3, row: 2.6, s: 0.85 }, { type: 'log', col: 1.7, row: 8.6, rot: 0.4 }, { type: 'deadtree', col: 6.2, row: 0.5 }
+      ]
     };
   }
 
