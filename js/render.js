@@ -379,7 +379,7 @@ window.EEP.Renderer = function (canvas, game) {
       m.position.set(pos.x, it.y != null ? it.y : 0, pos.z);
       if (it.rot) m.rotation.y = it.rot;
       if (it.s) m.scale.multiplyScalar(it.s);
-      if (it.type === 'boat') m.userData.boat = { speed: it.speed || 0.12, phase: it.phase || 0 };
+      if (it.type === 'boat') m.userData.boat = { speed: it.speed || 1.6, phase: it.phase || 0 };
       dg.add(m);
     }
   }
@@ -440,11 +440,16 @@ window.EEP.Renderer = function (canvas, game) {
           c.scale.setScalar(0.5 + f * 1.1);
         }
       } else if (o.userData.boat) {
-        const rx = bw / 2 + 3.6, rz = bd / 2 + 3.6;
-        const phi = t * o.userData.boat.speed + o.userData.boat.phase;
-        o.position.set(Math.cos(phi) * rx, -0.42 + Math.sin(t * 1.4 + o.userData.boat.phase) * 0.03, Math.sin(phi) * rz);
-        const vx = -rx * Math.sin(phi), vz = rz * Math.cos(phi);
-        o.rotation.y = Math.atan2(-vz, vx);
+        // caminho retangular ao redor da ilha (margem constante -> sempre na agua)
+        const Rx = bw / 2 + 4.2, Rz = bd / 2 + 4.2, w = 2 * Rx, h = 2 * Rz, P = 2 * (w + h);
+        let d = (t * o.userData.boat.speed + o.userData.boat.phase) % P; if (d < 0) d += P;
+        let x, z, dx, dz;
+        if (d < w) { x = -Rx + d; z = -Rz; dx = 1; dz = 0; }
+        else if (d < w + h) { const e = d - w; x = Rx; z = -Rz + e; dx = 0; dz = 1; }
+        else if (d < 2 * w + h) { const e = d - w - h; x = Rx - e; z = Rz; dx = -1; dz = 0; }
+        else { const e = d - 2 * w - h; x = -Rx; z = Rz - e; dx = 0; dz = -1; }
+        o.position.set(x, -0.42 + Math.sin(t * 1.4 + o.userData.boat.phase) * 0.03, z);
+        o.rotation.y = Math.atan2(-dz, dx);
       }
     });
   }
