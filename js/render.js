@@ -332,14 +332,17 @@ window.EEP.Renderer = function (canvas, game) {
   // ---- camera / sizing ----
   let fitH = Math.max(bw, bd) * 0.5 + 0.7;
   function updateCamera(w, h) {
+    const showcase = document.body.classList.contains('showcase');
+    const f = fitH * (showcase ? 1.12 : 1);
     const aspect = w / h;
-    const halfH = fitH, halfW = fitH * aspect;
+    const halfH = f, halfW = f * aspect;
     camera.left = -halfW; camera.right = halfW; camera.top = halfH; camera.bottom = -halfH;
     camera.updateProjectionMatrix();
   }
   function resize() {
+    const showcase = document.body.classList.contains('showcase');
     const w = canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 820;
-    const h = Math.round(w * 0.66);
+    const h = showcase ? window.innerHeight : Math.round(w * 0.66);
     gl.setSize(w, h, false);
     canvas.style.height = h + 'px';
     updateCamera(w, h);

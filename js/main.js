@@ -294,17 +294,28 @@ window.addEventListener('DOMContentLoaded', function () {
   el('rank-close').addEventListener('click', () => { el('rankmodal').hidden = true; if (timeLeft > 0) startTimer(false); });
   el('rankmodal').addEventListener('click', e => { if (e.target === el('rankmodal')) { el('rankmodal').hidden = true; if (timeLeft > 0) startTimer(false); } });
 
-  EEP.attachCanvas(app, { canvas, onChange: refresh, onHint });
-
-  // ---- login then start ----
-  let start = 0, skipLogin = false;
+  // ---- params ----
+  let start = 0, skipLogin = false, showcase = false;
   try {
     const params = new URLSearchParams(location.search);
     const q = parseInt(params.get('fase'), 10); if (q >= 1 && q <= EEP.LEVEL_COUNT) { start = q - 1; skipLogin = true; }
     wantDemo = params.get('demo') === '1';
     const gt = params.get('grid'); if (gt === 'square' || gt === 'hex') app.gridType = gt;
     const rr = parseFloat(params.get('rot')); if (!isNaN(rr)) wantRot = rr;
+    showcase = params.get('showcase') === '1';
   } catch (e) { }
+
+  // ---- showcase (diorama de pitch): tela cheia, sem HUD, girando ----
+  if (showcase) {
+    document.body.classList.add('showcase');
+    app.player = 'Showcase'; el('login').hidden = true;
+    loadLevel(start); stopTimer();
+    if (app.renderer && app.renderer.resize) app.renderer.resize();
+    (function spin() { if (app.renderer) app.renderer.rotate(0.003); requestAnimationFrame(spin); })();
+    return;
+  }
+
+  EEP.attachCanvas(app, { canvas, onChange: refresh, onHint });
 
   function doLogin() {
     const name = (el('login-name').value || '').trim() || 'Visitante';

@@ -135,3 +135,10 @@ h3{font-family:var(--f-display);margin:0}
   border-radius:10px;padding:12px 18px;font-weight:600;font-size:.9rem;box-shadow:0 20px 40px -18px rgba(0,0,0,.6);
   opacity:0;transition:opacity .3s ease,transform .3s ease;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* showcase (diorama de pitch): tela cheia, sem HUD, so o cenario */
+body.showcase{background:#8ccfee}
+body.showcase .topbar,body.showcase .objbar,body.showcase .panel,body.showcase .hint,body.showcase .rotctrls{display:none !important}
+body.showcase .app{padding:0;max-width:none;grid-template-columns:1fr;gap:0}
+body.showcase .stage{border:0;border-radius:0;box-shadow:none;padding:0;background:#8ccfee}
+body.showcase #board{border-radius:0;cursor:default}
