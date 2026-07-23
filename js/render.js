@@ -454,12 +454,14 @@ window.EEP.Renderer = function (canvas, game) {
       const pole = cyl(0.035, 0.05, 0.72, 0x39414a); pole.position.y = 0.36; g.add(pole);
       const arm = box(0.22, 0.04, 0.05, 0x39414a); arm.position.set(0.09, 0.7, 0); g.add(arm);
       const head = box(0.17, 0.08, 0.12, 0x2b3138); head.position.set(0.19, 0.66, 0); g.add(head);
-      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), new THREE.MeshLambertMaterial({ color: 0xfff1c2, emissive: 0x000000 }));
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), new THREE.MeshLambertMaterial({ color: 0xfff1c2, emissive: 0x000000 }));
       bulb.position.set(0.19, 0.6, 0); bulb.userData.bulb = 0xffd27a; g.add(bulb);
-      const halo = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffdd99, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
-      halo.position.set(0.19, 0.58, 0); halo.userData.halo = 0.5; g.add(halo);
-      const pool = new THREE.Mesh(new THREE.CircleGeometry(0.34, 18), new THREE.MeshBasicMaterial({ color: 0xffdd99, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
-      pool.rotation.x = -Math.PI / 2; pool.position.set(0.19, 0.02, 0); pool.userData.halo = 0.3; g.add(pool);
+      // feixe conico (apex na luminaria, base no chao)
+      const beam = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.58, 22, 1, true), new THREE.MeshBasicMaterial({ color: 0xffdf9e, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+      beam.position.set(0.19, 0.31, 0); beam.userData.halo = 0.15; g.add(beam);
+      // poca de luz iluminada no chao
+      const pool = new THREE.Mesh(new THREE.CircleGeometry(0.3, 22), new THREE.MeshBasicMaterial({ color: 0xffdf9e, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      pool.rotation.x = -Math.PI / 2; pool.position.set(0.19, 0.02, 0); pool.userData.halo = 0.34; g.add(pool);
     } else if (type === 'trafficlight') {
       const pole = cyl(0.035, 0.05, 0.6, 0x33393f); pole.position.y = 0.3; g.add(pole);
       const casing = box(0.12, 0.34, 0.1, 0x23282d); casing.position.set(0, 0.64, 0); g.add(casing);
