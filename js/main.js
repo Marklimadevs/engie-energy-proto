@@ -184,13 +184,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // ---- timer + events ----
   function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
-  function startTimer(full) {
-    stopTimer();
-    if (full) { timeLeft = app.level.time || 120; eventFired = !app.level.event; }
-    const e = el('timer'); if (e) e.hidden = false;
-    updateTimer();
-    if (timeLeft > 0) timerId = setInterval(tick, 1000);
-  }
+  function startTimer(full) { stopTimer(); timeLeft = 0; eventFired = true; /* sem cronometro: decisao do Mark, nao re-adicionar */ }
   function tick() {
     timeLeft--; updateTimer();
     const ev = app.level.event;
