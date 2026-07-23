@@ -48,19 +48,47 @@ h3{font-family:var(--f-display);margin:0}
 .phasetoggle .ph{background:transparent;border:none;color:#B9CEE0;font-family:var(--f-body);font-weight:600;font-size:.8rem;padding:6px 16px;cursor:pointer}
 .phasetoggle .ph.on{background:var(--blue);color:#fff}
 
-.app{display:grid;grid-template-columns:1fr 320px;gap:20px;padding:clamp(16px,3vw,28px);align-items:start;max-width:1240px;margin-inline:auto}
-@media(max-width:840px){.app{grid-template-columns:1fr}}
+.app{display:grid;grid-template-columns:1fr;gap:20px;padding:clamp(12px,2.4vw,24px);align-items:start;max-width:1180px;margin-inline:auto}
 
-.stage{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 20px 40px -30px rgba(11,31,51,.5)}
-#board{width:100%;height:auto;display:block;border-radius:10px;background:#7cc8ec;cursor:grab;touch-action:none;
+.stage{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:0;overflow:hidden;box-shadow:0 20px 40px -30px rgba(11,31,51,.5)}
+#board{width:100%;height:auto;display:block;border-radius:16px;background:#7cc8ec;cursor:grab;touch-action:none;
   filter:saturate(1.05) contrast(1.04) brightness(1.02) hue-rotate(0deg)}
 #board:active{cursor:grabbing}
-.rotctrls{position:absolute;right:26px;top:26px;display:flex;gap:8px}
+.rotctrls{position:absolute;right:16px;top:16px;display:flex;gap:8px;z-index:6}
 .rotctrls button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.9);
   color:var(--ink);font-size:1.25rem;line-height:1;cursor:pointer;backdrop-filter:blur(4px);box-shadow:0 6px 14px -8px rgba(11,31,51,.5)}
 .rotctrls button:hover{border-color:var(--blue);color:var(--blue)}
 .rotctrls button:focus-visible{outline:3px solid var(--blue-bright);outline-offset:2px}
-.hint{margin:12px 4px 2px;font-size:.82rem;color:var(--muted)}
+
+/* ---- HUD sobreposto ao jogo (UI dentro do canvas) ---- */
+.hud-hint{position:absolute;top:16px;left:50%;transform:translateX(-50%);margin:0;z-index:6;
+  max-width:min(52%,460px);background:rgba(11,31,51,.72);color:#eaf3fb;font-size:.78rem;font-weight:500;
+  padding:7px 15px;border-radius:100px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.hud{position:absolute;z-index:6}
+.hud.block{background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.65);border-radius:14px;
+  box-shadow:0 14px 34px -16px rgba(11,31,51,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.hud h2{margin:0 0 9px}
+.hud-stats{top:16px;left:16px;width:214px;max-width:42%;padding:13px 15px}
+.hud-stats .ind{margin-bottom:9px}
+.hud-build{left:16px;right:16px;bottom:16px;padding:11px 13px}
+.hud-build .hud-head{display:flex;align-items:center;margin-bottom:9px}
+.hud-build .palette{display:flex;flex-wrap:wrap;gap:8px}
+.hud-build .build-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:9px}
+.hud-build .tradeoff{margin:0;flex:1;min-width:0;line-height:1.4}
+.hud-build .actions{flex:0 0 auto;display:flex;gap:8px}
+.hud-build .actions .btn{flex:0 0 auto;padding:9px 18px;font-size:.84rem}
+.hud .tool{flex-direction:row;align-items:center;gap:7px;padding:7px 12px 7px 7px;border-radius:11px}
+.hud .tool .ti{width:30px;height:30px;flex:0 0 auto}
+.hud .tool .tl{font-size:.82rem}
+.hud .tool .tc{font-size:.72rem}
+@media(max-width:720px){
+  .hud-hint{display:none}
+  .hud-stats{width:150px;padding:10px 12px}
+  .hud-stats .ind-row{font-size:.76rem}
+  .hud-build .palette{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+  .hud-build .tool{flex:0 0 auto}
+}
 
 .panel{display:flex;flex-direction:column;gap:16px;position:sticky;top:16px}
 .block{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
@@ -139,7 +167,7 @@ h3{font-family:var(--f-display);margin:0}
 
 /* showcase (diorama de pitch): tela cheia, sem HUD, so o cenario */
 body.showcase{background:#8ccfee}
-body.showcase .topbar,body.showcase .objbar,body.showcase .panel,body.showcase .hint,body.showcase .rotctrls{display:none !important}
+body.showcase .topbar,body.showcase .objbar,body.showcase .hud,body.showcase .hud-hint,body.showcase .panel,body.showcase .hint,body.showcase .rotctrls{display:none !important}
 body.showcase .app{padding:0;max-width:none;grid-template-columns:1fr;gap:0}
 body.showcase .stage{border:0;border-radius:0;box-shadow:none;padding:0;background:#8ccfee}
 body.showcase #board{border-radius:0;cursor:default}

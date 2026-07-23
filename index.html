@@ -34,31 +34,32 @@
 
 <main class="app">
   <section class="stage">
-    <canvas id="board" aria-label="Tabuleiro hexagonal do jogo"></canvas>
+    <canvas id="board" aria-label="Tabuleiro do jogo"></canvas>
+
     <div class="rotctrls" aria-label="Girar a visão">
       <button id="rot-l" title="Girar para a esquerda (Q)" aria-label="Girar para a esquerda">↺</button>
       <button id="rot-r" title="Girar para a direita (E)" aria-label="Girar para a direita">↻</button>
     </div>
-    <p class="hint" id="hint">Arraste para girar a visão. Selecione uma peça e clique numa célula para construir; ligue as fontes às demandas com linhas.</p>
-  </section>
 
-  <aside class="panel">
-    <div class="block">
-      <h2>Peças</h2>
-      <div class="palette" id="palette" role="group" aria-label="Peças disponíveis"></div>
-      <p class="tradeoff" id="tradeoff">Cada peça tem vantagens e desvantagens. Passe o mouse para ver.</p>
-    </div>
+    <p class="hud-hint" id="hint">Selecione uma peça e clique numa célula. Ligue as fontes às demandas com linhas.</p>
 
-    <div class="block">
+    <div class="hud hud-stats block">
       <h2>Indicadores</h2>
       <div id="indicators"></div>
     </div>
 
-    <div class="block actions">
-      <button id="finish" class="btn btn-primary">Finalizar fase</button>
-      <button id="reset" class="btn btn-ghost">Reiniciar</button>
+    <div class="hud hud-build block">
+      <div class="hud-head"><h2>Peças</h2></div>
+      <div class="palette" id="palette" role="group" aria-label="Peças disponíveis"></div>
+      <div class="build-foot">
+        <p class="tradeoff" id="tradeoff">Passe o mouse numa peça para ver vantagens e desvantagens.</p>
+        <div class="actions">
+          <button id="finish" class="btn btn-primary">Finalizar</button>
+          <button id="reset" class="btn btn-ghost">Reiniciar</button>
+        </div>
+      </div>
     </div>
-  </aside>
+  </section>
 </main>
 
 <div class="modal" id="modal" hidden>
