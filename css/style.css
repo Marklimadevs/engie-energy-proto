@@ -48,7 +48,7 @@ h3{font-family:var(--f-display);margin:0}
 .phasetoggle .ph{background:transparent;border:none;color:#B9CEE0;font-family:var(--f-body);font-weight:600;font-size:.8rem;padding:6px 16px;cursor:pointer}
 .phasetoggle .ph.on{background:var(--blue);color:#fff}
 
-.app{display:grid;grid-template-columns:1fr;gap:20px;padding:clamp(12px,2.4vw,24px);align-items:start;max-width:1180px;margin-inline:auto}
+.app{display:grid;grid-template-columns:1fr;gap:16px;padding:10px clamp(10px,1.6vw,18px) 14px;align-items:start;max-width:none;margin-inline:0}
 
 .stage{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:0;overflow:hidden;box-shadow:0 20px 40px -30px rgba(11,31,51,.5)}
 #board{width:100%;height:auto;display:block;border-radius:16px;background:#7cc8ec;cursor:grab;touch-action:none;

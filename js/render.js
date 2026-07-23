@@ -483,7 +483,12 @@ window.EEP.Renderer = function (canvas, game) {
   function resize() {
     const showcase = document.body.classList.contains('showcase');
     const w = canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 820;
-    const h = showcase ? window.innerHeight : Math.round(w * 0.66);
+    let h;
+    if (showcase) h = window.innerHeight;
+    else {
+      const top = canvas.getBoundingClientRect().top; // preenche da posicao do canvas ate o fim da tela
+      h = Math.max(380, Math.round(window.innerHeight - top - 24));
+    }
     gl.setSize(w, h, false);
     canvas.style.height = h + 'px';
     updateCamera(w, h);
