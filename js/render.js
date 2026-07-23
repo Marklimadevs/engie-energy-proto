@@ -56,8 +56,8 @@ window.EEP.Renderer = function (canvas, game) {
     if (cell.terrain === 'hill') return COL.hill;
     if (cell.terrain === 'node') return COL.node;
     // land: tint by irradiance (sunnier = a touch warmer)
-    const a = new THREE.Color(0x86B24E), b = new THREE.Color(0xB2C773);
-    return a.lerp(b, cell.irr * 0.55).getHex();
+    const a = new THREE.Color(0x74AC48), b = new THREE.Color(0xA6C766);
+    return a.lerp(b, cell.irr * 0.5).getHex();
   }
   function topY(cell) {
     if (cell.terrain === 'hill') return 0.32;
@@ -99,6 +99,20 @@ window.EEP.Renderer = function (canvas, game) {
     ring.position.set(c._x, c._y + 0.02, c._z); ring.scale.set(1.0, 1, 1.0);
     boardGroup.add(ring);
   }
+
+  // ---- surrounding water + floating island base ----
+  (function () {
+    const W2 = bw + 4, D2 = bd + 4;
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 34, D2 + 34), new THREE.MeshLambertMaterial({ color: 0x6cbfe8 }));
+    water.rotation.x = -Math.PI / 2; water.position.y = -0.6; scene.add(water);
+    const shallow = new THREE.Mesh(new THREE.PlaneGeometry(W2 + 6, D2 + 6), new THREE.MeshLambertMaterial({ color: 0xa2daf3 }));
+    shallow.rotation.x = -Math.PI / 2; shallow.position.y = -0.55; scene.add(shallow);
+    const base = new THREE.Mesh(new THREE.BoxGeometry(W2, 2.0, D2), new THREE.MeshLambertMaterial({ color: 0x6b4a2f }));
+    base.position.y = -1.2; scene.add(base);
+    const skirt = new THREE.Mesh(new THREE.BoxGeometry(W2 + 0.2, 0.4, D2 + 0.2), new THREE.MeshLambertMaterial({ color: 0x86B24E }));
+    skirt.position.y = -0.3; scene.add(skirt);
+  })();
+  buildDecor();
 
   // ---- dynamic group (pieces + wires), rebuilt when state changes ----
   const dynGroup = new THREE.Group(); scene.add(dynGroup);
@@ -225,6 +239,85 @@ window.EEP.Renderer = function (canvas, game) {
     const ch1 = cyl(0.08, 0.09, 0.5, 0x33475b); ch1.position.set(0.16, 0.45, 0); g.add(ch1);
     const ch2 = cyl(0.07, 0.08, 0.38, 0x33475b); ch2.position.set(-0.05, 0.39, 0.06); g.add(ch2);
     return g;
+  }
+
+  // ---- decorative low-poly props (scenery) ----
+  function pyramid(r, h, color, seg) { const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, seg || 4), mat(color)); m.rotation.y = Math.PI / 4; return m; }
+  function buildProp(type, it) {
+    const g = new THREE.Group();
+    if (type === 'tree' || type === 'pine') {
+      const hgt = 0.5 + (it.v || 0) * 0.2;
+      const tr = cyl(0.05, 0.07, 0.2, 0x6b4a2f); tr.position.y = 0.1; g.add(tr);
+      const c1 = cone(0.26, 0.55 + hgt, 0x2f7d3f); c1.position.y = 0.42 + hgt * 0.5; g.add(c1);
+      const c2 = cone(0.2, 0.4, 0x256b34); c2.position.y = 0.72 + hgt; g.add(c2);
+    } else if (type === 'forest') {
+      const n = it.n || 6;
+      for (let i = 0; i < n; i++) { const a = i * 2.399, rr = 0.35 + (i % 3) * 0.25; const t = buildProp('tree', { v: i % 3 }); t.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); t.scale.setScalar(0.8 + (i % 2) * 0.25); g.add(t); }
+    } else if (type === 'volcano') {
+      const mt = new THREE.Mesh(new THREE.ConeGeometry(1.7, 2.3, 7), mat(0x7a5a3c)); mt.position.y = 1.15; g.add(mt);
+      const crater = cyl(0.5, 0.7, 0.25, 0x3a2a20); crater.position.y = 2.25; g.add(crater);
+      const lava = cyl(0.42, 0.5, 0.2, 0xff7a1a); lava.position.y = 2.32; g.add(lava);
+      for (let i = 0; i < 3; i++) { const s = sph(0.35 + i * 0.12, 0xe6e9ec); s.position.set((i - 1) * 0.2, 2.8 + i * 0.5, 0); g.add(s); }
+      // lava streak
+      const st = box(0.16, 0.05, 1.1, 0xff8a2a); st.position.set(0.2, 1.2, 0.55); st.rotation.x = 0.7; g.add(st);
+    } else if (type === 'cooling') {
+      const lower = cyl(0.34, 0.5, 0.7, 0xcfd3d6); lower.position.y = 0.35; g.add(lower);
+      const upper = cyl(0.44, 0.34, 0.35, 0xcfd3d6); upper.position.y = 0.87; g.add(upper);
+      const steam = sph(0.3, 0xeef2f4); steam.position.y = 1.2; g.add(steam);
+    } else if (type === 'silo') {
+      const body = cyl(0.22, 0.22, 0.9, 0xd7dbdf); body.position.y = 0.45; g.add(body);
+      const dome = sph(0.22, 0xc2c7cc); dome.scale.y = 0.5; dome.position.y = 0.9; g.add(dome);
+    } else if (type === 'plant') {
+      const b = box(1.1, 0.4, 0.6, 0xeaf1f6); b.position.y = 0.2; g.add(b);
+      const s = box(1.1, 0.12, 0.6, 0x2f7bbf); s.position.y = 0.42; g.add(s);
+    } else if (type === 'barn') {
+      const b = box(0.85, 0.5, 0.6, 0x8a5a3c); b.position.y = 0.25; g.add(b);
+      const roof = pyramid(0.72, 0.4, 0x5a3a2a); roof.position.y = 0.68; g.add(roof);
+    } else if (type === 'house') {
+      const b = box(0.55, 0.4, 0.55, 0xf2efe6); b.position.y = 0.2; g.add(b);
+      const roof = pyramid(0.5, 0.35, 0xc0472f); roof.position.y = 0.56; g.add(roof);
+    } else if (type === 'cow') {
+      const body = box(0.28, 0.16, 0.16, 0xf3f3f0); body.position.y = 0.16; g.add(body);
+      const patch = box(0.12, 0.14, 0.14, 0x2b2b2b); patch.position.set(0.05, 0.17, 0); g.add(patch);
+      const head = box(0.1, 0.1, 0.1, 0xf3f3f0); head.position.set(-0.18, 0.18, 0); g.add(head);
+      for (let i = 0; i < 4; i++) { const l = box(0.04, 0.1, 0.04, 0x33302c); l.position.set((i < 2 ? 0.1 : -0.1), 0.05, (i % 2 ? 0.05 : -0.05)); g.add(l); }
+    } else if (type === 'hay') {
+      const h = cyl(0.12, 0.12, 0.22, 0xdcc060); h.rotation.z = Math.PI / 2; h.position.y = 0.12; g.add(h);
+    } else if (type === 'treatment') {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.06, 8, 20), mat(0xd8dde1)); ring.rotation.x = Math.PI / 2; ring.position.y = 0.12; g.add(ring);
+      const wtr = cyl(0.4, 0.4, 0.1, 0x5fb0e0); wtr.position.y = 0.1; g.add(wtr);
+      const arm = box(0.8, 0.04, 0.05, 0xbfc6cc); arm.position.y = 0.2; g.add(arm);
+      const basin = box(0.9, 0.14, 0.5, 0xd8dde1); basin.position.set(0.95, 0.09, 0); g.add(basin);
+      const bw2 = box(0.78, 0.08, 0.4, 0x5fb0e0); bw2.position.set(0.95, 0.13, 0); g.add(bw2);
+    } else if (type === 'boat') {
+      const hull = box(0.9, 0.28, 0.4, 0xb23b34); hull.position.y = 0.14; g.add(hull);
+      const deck = box(0.9, 0.06, 0.4, 0xf0f0f0); deck.position.y = 0.3; g.add(deck);
+      const cabin = box(0.22, 0.22, 0.34, 0xf0f0f0); cabin.position.set(-0.28, 0.4, 0); g.add(cabin);
+      const c1 = box(0.4, 0.16, 0.14, 0x2a7bbf); c1.position.set(0.12, 0.4, 0.1); g.add(c1);
+      const c2 = box(0.4, 0.16, 0.14, 0xd9a233); c2.position.set(0.12, 0.4, -0.1); g.add(c2);
+    } else if (type === 'road') {
+      const r = box(it.len || 1, 0.05, 0.34, 0x3a3f45); r.position.y = 0.03; g.add(r);
+    } else if (type === 'rock') {
+      const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18), mat(0x9aa0a6)); r.position.y = 0.12; g.add(r);
+    }
+    return g;
+  }
+
+  function decorPos(it) {
+    if (it.wx != null) return { x: it.wx, z: it.wz };
+    const pc = grid.place(it.col, it.row), p = grid.toPixel(pc.q, pc.r, HS);
+    return { x: p.x - ccx, z: p.y - ccz };
+  }
+  function buildDecor() {
+    const list = level.decor || [];
+    const dg = new THREE.Group(); scene.add(dg);
+    for (const it of list) {
+      const pos = decorPos(it), m = buildProp(it.type, it);
+      m.position.set(pos.x, it.y != null ? it.y : 0, pos.z);
+      if (it.rot) m.rotation.y = it.rot;
+      if (it.s) m.scale.multiplyScalar(it.s);
+      dg.add(m);
+    }
   }
 
   // ---- camera / sizing ----

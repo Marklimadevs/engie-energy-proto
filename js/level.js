@@ -121,7 +121,27 @@ window.EEP = window.EEP || {};
       indicators: ['energia', 'custo', 'sust', 'sat'],
       targets: { sust: 40, sat: 40 },
       objective: 'Abasteca a cidade pequena — 120 MW.',
-      time: 120, event: null
+      time: 120, event: null,
+      decor: [
+        { type: 'cooling', col: 4.2, row: 1.1 }, { type: 'cooling', col: 5.0, row: 0.8 },
+        { type: 'cooling', col: 5.2, row: 1.6 }, { type: 'cooling', col: 6.0, row: 1.2 },
+        { type: 'plant', col: 4.2, row: 2.1 },
+        { type: 'volcano', col: 8.2, row: 1.4, s: 0.95 },
+        { type: 'forest', col: 7.4, row: 3.0, n: 7 }, { type: 'forest', col: 8.3, row: 3.6, n: 6 },
+        { type: 'forest', col: 7.0, row: 4.6, n: 6 }, { type: 'tree', col: 6.6, row: 2.4 },
+        { type: 'silo', col: 0.6, row: 1.8 }, { type: 'silo', col: 1.1, row: 1.7 },
+        { type: 'silo', col: 0.7, row: 2.4 }, { type: 'silo', col: 1.2, row: 2.3 },
+        { type: 'barn', col: 1.7, row: 3.1 },
+        { type: 'tree', col: 0.4, row: 0.8 }, { type: 'tree', col: 0.5, row: 4.2 }, { type: 'tree', col: 0.9, row: 5.0 },
+        { type: 'house', col: 2.0, row: 6.0 },
+        { type: 'cow', col: 3.0, row: 6.4 }, { type: 'cow', col: 3.5, row: 6.8 }, { type: 'cow', col: 2.8, row: 7.1 }, { type: 'cow', col: 3.7, row: 6.2 },
+        { type: 'hay', col: 2.5, row: 6.6 }, { type: 'hay', col: 2.8, row: 6.6 },
+        { type: 'treatment', col: 6.3, row: 6.4 },
+        { type: 'rock', col: 5.6, row: 4.6 }, { type: 'rock', col: 6.2, row: 3.4 },
+        { type: 'road', col: 4.0, row: 2.6, len: 7, rot: 0 },
+        { type: 'road', col: 3.0, row: 4.4, len: 5, rot: Math.PI / 2 },
+        { type: 'boat', wx: -10, wz: 5.2, y: -0.42, rot: 0.5, s: 1.1 }
+      ]
     };
   }
 

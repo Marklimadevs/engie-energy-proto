@@ -52,7 +52,7 @@ h3{font-family:var(--f-display);margin:0}
 @media(max-width:840px){.app{grid-template-columns:1fr}}
 
 .stage{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 20px 40px -30px rgba(11,31,51,.5)}
-#board{width:100%;height:auto;display:block;border-radius:10px;background:#DCE7F0;cursor:grab;touch-action:none}
+#board{width:100%;height:auto;display:block;border-radius:10px;background:#7cc8ec;cursor:grab;touch-action:none}
 #board:active{cursor:grabbing}
 .rotctrls{position:absolute;right:26px;top:26px;display:flex;gap:8px}
 .rotctrls button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.9);
